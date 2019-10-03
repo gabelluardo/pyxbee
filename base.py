@@ -14,6 +14,76 @@ log = logging.getLogger(__name__)
 PORT = '/dev/ttyUSB0'
 BAUD_RATE = 115200
 
+PACKETS = {
+    '0': {
+        'dest': '',
+        'type': '0',
+        'heartrate': '',
+        'power': '',
+        'cadence': '',
+        'distance': '',
+        'speed': '',
+        'time': '',
+        'gear': ''
+    },
+    '1': {
+        'dest': '',
+        'type': '1',
+        'log': '',
+        'video': '',
+        'ant': '',
+        'video_running': '',
+        'video_recording': '',
+        'powermeter_running': '',
+        'heartrate_running': '',
+        'speed_running': '',
+        'calibration': ''
+    },
+    '2': {
+        'dest': '',
+        'type': '2',
+        'valore': ''
+    },
+    '3': {
+        'dest': '',
+        'type': '3',
+        'circonferenza': '',
+        'run': '',
+        'log': '',
+        'csv': '',
+        'ant': '',
+        'potenza': '',
+        'led': '',
+        'calibration_value': '',
+        'update': '',
+        'p13': ''
+    },
+    '4': {
+        'dest': '4',
+        'type': '',
+        'valore': ''
+    },
+    '5': {
+        'dest': '',
+        'type': '5',
+        'messaggio': '',
+        'priorita': '',
+        'durata': '',
+        'timeout': ''
+    },
+    '6': {
+        'dest': '',
+        'type': '6',
+        'valore': ''
+    },
+    '7': {
+        'dest': '',
+        'type': '7',
+        'value': '',
+        'name_file': ''
+    }
+}
+
 
 # questa classe si interfaccia in con
 # le funzioni di basso livello
@@ -162,9 +232,7 @@ class Packet:
         # valori da un pacchetto vuoto.
         # ORDINE NON IMPORTANTE
         if isinstance(data, dict):
-            tipo = data.get('type')
-            with open('pyxbee/packets.json') as f:
-                d = json.load(f)[str(tipo)]
+            d = PACKETS[str(data['type'])]
             d.update(data)
             res = d.values()
         # se viene passato un una lista/tupla/stringa
@@ -204,9 +272,7 @@ class Packet:
     @property
     def jsonify(self):
         content = list(self.content[::-1])
-
-        with open('pyxbee/packets.json') as f:
-            res = json.load(f)[str(self.tipo)]
+        res = PACKETS[str(self.tipo)]
 
         for key, _ in res.items():
             res[key] = content.pop()

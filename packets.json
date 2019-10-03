@@ -1,7 +1,7 @@
 {
   "0": {
     "dest": "",
-    "type": "",
+    "type": "0",
     "heartrate": "",
     "power": "",
     "cadence": "",
@@ -12,7 +12,7 @@
   },
   "1": {
     "dest": "",
-    "type": "",
+    "type": "1",
     "log": "",
     "video": "",
     "ant": "",
@@ -25,12 +25,12 @@
   },
   "2": {
     "dest": "",
-    "type": "",
+    "type": "2",
     "valore": ""
   },
   "3": {
     "dest": "",
-    "type": "",
+    "type": "3",
     "circonferenza": "",
     "run": "",
     "log": "",
@@ -43,13 +43,13 @@
     "p13": ""
   },
   "4": {
-    "dest": "",
+    "dest": "4",
     "type": "",
     "valore": ""
   },
   "5": {
     "dest": "",
-    "type": "",
+    "type": "5",
     "messaggio": "",
     "priorita": "",
     "durata": "",
@@ -57,12 +57,12 @@
   },
   "6": {
     "dest": "",
-    "type": "",
+    "type": "6",
     "valore": ""
   },
   "7": {
     "dest": "",
-    "type": "",
+    "type": "7",
     "value": "",
     "name_file": ""
   }
