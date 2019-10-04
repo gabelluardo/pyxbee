@@ -8,6 +8,7 @@ from digi.xbee.models.address import XBee64BitAddress
 from serial.serialutil import SerialException
 from abc import abstractmethod
 
+from pyxbee.exception import InvalidTypeException
 
 log = logging.getLogger(__name__)
 
@@ -232,6 +233,9 @@ class Packet:
         # valori da un pacchetto vuoto.
         # ORDINE NON IMPORTANTE
         if isinstance(data, dict):
+            if data['type'] not in PACKETS.keys():
+                raise InvalidTypeException
+
             d = PACKETS[str(data['type'])]
             d.update(data)
             res = d.values()
@@ -241,8 +245,13 @@ class Packet:
         elif isinstance(data, (list, tuple)):
             res = data
         else:
-            res = data.split(';')
-        return tuple(res)
+            res = [json.loads(item.lower()) if item.lower() in ['true', 'false']
+                   else item for item in data.split(';')]
+
+        res = tuple(res)
+        if res[1] not in PACKETS.keys():
+            raise InvalidTypeException
+        return res
 
     @property
     def content(self):
