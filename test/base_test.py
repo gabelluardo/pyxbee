@@ -1,14 +1,143 @@
 # pylint: disable=unused-wildcard-import
-from ..base import *
+from pyxbee.base import *
+from pyxbee.exception import *
 
 import pytest
 import json
 import random
 
+test_packet = {
+    '0': {
+        'dest': '0',
+        'type': '0',
+        'heartrate': str(random.random()),
+        'power': str(random.random()),
+        'cadence': str(random.random()),
+        'distance': str(random.random()),
+        'speed': str(random.random()),
+        'time': str(random.random()),
+        'gear': str(random.random())
+    },
+    '1': {
+        'dest': '0',
+        'type': '1',
+        'log': bool(random.randint(0, 1)),
+        'video': bool(random.randint(0, 1)),
+        'ant': bool(random.randint(0, 1)),
+        'video_running': bool(random.randint(0, 1)),
+        'video_recording': bool(random.randint(0, 1)),
+        'powermeter_running': bool(random.randint(0, 1)),
+        'heartrate_running': bool(random.randint(0, 1)),
+        'speed_running': bool(random.randint(0, 1)),
+        'calibration': bool(random.randint(0, 1))
+    },
+    '2': {
+        'dest': '0',
+        'type': '2',
+        'valore': str(random.randint(0, 7))
+    },
+    '3': {
+        'dest': '0',
+        'type': '3',
+        'circonferenza': str(random.random()),
+        'run': str(random.random()),
+        'log': bool(random.randint(0, 1)),
+        'csv': bool(random.randint(0, 1)),
+        'ant': bool(random.randint(0, 1)),
+        'potenza': str(random.random()),
+        'led': str(random.random()),
+        'calibration_value': str(random.random()),
+        'update': str(random.random()),
+        'p13': bool(random.randint(0, 1))
+    },
+    '4': {
+        'dest': '0',
+        'type': '4',
+        'valore': str(random.randint(0, 13))
+    },
+    '5': {
+        'dest': '0',
+        'type': '5',
+        'messaggio': str(random.random()),
+        'priorita': str(random.randint(0, 5)),
+        'durata': str(random.random()),
+        'timeout': str(random.random())
+    },
+    '6': {
+        'dest': '0',
+        'type': '6',
+        'valore': str(random.randint(0, 1))
+    },
+    '7': {
+        'dest': '0',
+        'type': '7',
+        'value': bool(random.randint(0, 1)),
+        'name_file': str(random.random())
+    }
+}
 
-# class TestPacket:
-#     def test_one(self):
-#         pass
+
+class TestPacket:
+    def test_load(self):
+        for tipo in test_packet.keys():
+            tester = test_packet[tipo]
+            tester_tuple = tuple([tester[val] for val in tester.keys()])
+            tester_list = list(tester_tuple)
+            tester_str = ';'.join(map(str, tester.values()))
+
+            # load con dizionario
+            p1 = Packet(tester)
+
+            assert p1.jsonify == json.dumps(tester)
+            assert p1.dictify == tester
+            assert p1.content == tester_tuple
+            assert len(p1) == len(tester)
+            assert str(p1) == str(tuple(tester.values()))
+
+            p2 = Packet(tester)
+
+            assert p1.jsonify == p2.jsonify
+            assert p1.dictify == p2.dictify
+            assert p1.content == p2.content
+            assert p1.value == p2.value
+            assert p1.encode == p2.encode
+
+            # load con tupla
+            p3 = Packet(tester_tuple)
+
+            assert p1.jsonify == p3.jsonify
+            assert p1.dictify == p3.dictify
+            assert p1.content == p3.content
+            assert p1.value == p3.value
+            assert p1.encode == p3.encode
+
+            # load con lista
+            p4 = Packet(tester_list)
+
+            assert p1.jsonify == p4.jsonify
+            assert p1.dictify == p4.dictify
+            assert p1.content == p4.content
+            assert p1.value == p4.value
+            assert p1.encode == p4.encode
+
+            # load con stringa
+            p5 = Packet(tester_str)
+
+            assert p1.content == p5.content
+            assert p1.value == p5.value
+            assert p1.encode == p5.encode
+            assert p1.jsonify == p5.jsonify
+            assert p1.dictify == p5.dictify
+
+    def test_wrong_type(self):
+        values = ['19', '-1', 'a', '=', ';', '', ',']
+
+        for char in values:
+            with pytest.raises(InvalidTypeException):
+                Packet('0;'+char)
+
+    def test_packet_incomplete(self):
+        pass
 
 
 # Questo test deve essere eseguito con
@@ -37,75 +166,7 @@ class TestServerNotConnected:
 
     def test_manage_packet(self):
         dest = self.srv.listener.get('0')
-        test_packet = {
-            '0': {
-                'dest': '0',
-                'type': '0',
-                'heartrate': str(random.random()),
-                'power': str(random.random()),
-                'cadence': str(random.random()),
-                'distance': str(random.random()),
-                'speed': str(random.random()),
-                'time': str(random.random()),
-                'gear': str(random.random())
-            },
-            '1': {
-                'dest': '0',
-                'type': '1',
-                'log': True,
-                'video': True,
-                'ant': False,
-                'video_running': True,
-                'video_recording': True,
-                'powermeter_running': False,
-                'heartrate_running': True,
-                'speed_running': False,
-                'calibration': True
-            },
-            '2': {
-                'dest': '0',
-                'type': '2',
-                'valore': ''
-            },
-            '3': {
-                'dest': '0',
-                'type': '3',
-                'circonferenza': str(random.random()),
-                'run': str(random.random()),
-                'log': False,
-                'csv': False,
-                'ant': False,
-                'potenza': str(random.random()),
-                'led': str(random.random()),
-                'calibration_value': str(random.random()),
-                'update': 'dsfasdfasdfasdf',
-                'p13': True
-            },
-            '4': {
-                'dest': '4',
-                'type': '',
-                'valore': ''
-            },
-            '5': {
-                'dest': '',
-                'type': '5',
-                'messaggio': '',
-                'priorita': '',
-                'durata': '',
-                'timeout': ''
-            },
-            '6': {
-                'dest': '',
-                'type': '6',
-                'valore': ''
-            },
-            '7': {
-                'dest': '',
-                'type': '7',
-                'value': '',
-                'name_file': ''
-            }
-        }
+
         data = test_packet[Packet.Type.DATA]
         packet = Packet(data)
         self.srv.manage_packet(packet)
