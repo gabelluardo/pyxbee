@@ -131,29 +131,46 @@ class TestPacket:
             assert p1.dictify == p5.dictify
 
     def test_wrong_type(self):
-        values = ['19', '-1', 'a', '=', ';', '', ',']
+        values = ['19', '-1', 'a', '=', ';', '', ',', 'é']
 
         for char in values:
             with pytest.raises(InvalidTypeException):
                 Packet('0;'+char)
 
     def test_fields_packet(self):
+        with pytest.raises(InvalidFieldsException):
+            Packet({'dest': '0', 'type': '0'})
+
+        tester = dict(test_packet[Packet.Type.DATA])
+        tester.pop('gear')
+        with pytest.raises(InvalidFieldsException):
+            Packet(tester)
+
+    def test_content(self):
         tester = dict(test_packet[Packet.Type.DATA])
         p1 = Packet(tester)
 
         assert p1.content == tuple(tester.values())
 
-        with pytest.raises(InvalidFieldsException):
-            Packet({'dest': '0', 'type': '0'})
+        tester2 = dict(test_packet[Packet.Type.DATA])
+        tester2['gear'] = 11
+        p2 = Packet(tester2)
 
-        tester.pop('gear')
-        with pytest.raises(InvalidFieldsException):
-            Packet(tester)
+        assert p1.content != p2.content
+        assert p1.value != p2.value
+        assert len(p1) == len(p2)
+
+        tester2['dest'] = 2
+        p3 = Packet(tester2)
+
+        assert p2.content != p3.content
+        assert p2.value == p3.value
+        assert len(p2) == len(p3)
 
 
-# Questo test deve essere eseguito con
-# l'antenna NON collegata al pc
-class TestServerNotConnected:
+# Questo test deve essere eseguito
+# con l'antenna NON collegata
+class TestServerNotPlugged:
     def setup(self):
         self.srv = Server()
         self.srv.listener = Taurus('0', 'listener0', self.srv)
@@ -195,16 +212,30 @@ class TestServerNotConnected:
 
         # TODO: Inserire gli altri pacchetti
 
-# class TestClient:
-#     def test_one(self):
-#         pass
+
+# @TODO: Aggiungere test classe Server (antenna collegata)
+# Questo test deve essere eseguito
+# con l'antenna collegata
+class TestServer:
+    pass
 
 
-# class TestBike:
-#     def test_one(self):
-#         pass
+# @TODO: Aggiungere test classe Client (antenna collegata)
+# Questo test deve essere eseguito
+# con l'antenna collegata
+class TestClient:
+    pass
 
 
-# class TestTaurus:
-#     def test_one(self):
-#         pass
+# @TODO: Aggiungere test classe Bike (antenna collegata)
+# Questo test deve essere eseguito
+# con l'antenna collegata
+class TestBike:
+    pass
+
+
+# @TODO: Aggiungere test classe Taurus (antenna collegata)
+# Questo test deve essere eseguito
+# con l'antenna collegata
+class TestTaurus:
+    pass
