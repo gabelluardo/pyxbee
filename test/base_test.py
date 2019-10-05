@@ -80,7 +80,7 @@ test_packet = {
 class TestPacket:
     def test_load(self):
         for tipo in test_packet.keys():
-            tester = test_packet[tipo]
+            tester = dict(test_packet[tipo])
             tester_tuple = tuple([tester[val] for val in tester.keys()])
             tester_list = list(tester_tuple)
             tester_str = ';'.join(map(str, tester.values()))
@@ -94,6 +94,7 @@ class TestPacket:
             assert len(p1) == len(tester)
             assert str(p1) == str(tuple(tester.values()))
 
+            # per la comparazione di due packetti uguali
             p2 = Packet(tester)
 
             assert p1.jsonify == p2.jsonify
@@ -136,8 +137,18 @@ class TestPacket:
             with pytest.raises(InvalidTypeException):
                 Packet('0;'+char)
 
-    def test_packet_incomplete(self):
-        pass
+    def test_fields_packet(self):
+        tester = dict(test_packet[Packet.Type.DATA])
+        p1 = Packet(tester)
+
+        assert p1.content == tuple(tester.values())
+
+        with pytest.raises(InvalidFieldsException):
+            Packet({'dest': '0', 'type': '0'})
+
+        tester.pop('gear')
+        with pytest.raises(InvalidFieldsException):
+            Packet(tester)
 
 
 # Questo test deve essere eseguito con
@@ -167,17 +178,17 @@ class TestServerNotConnected:
     def test_manage_packet(self):
         dest = self.srv.listener.get('0')
 
-        data = test_packet[Packet.Type.DATA]
+        data = dict(test_packet[Packet.Type.DATA])
         packet = Packet(data)
         self.srv.manage_packet(packet)
         assert dest.data == packet.jsonify
 
-        state = test_packet[Packet.Type.STATE]
+        state = dict(test_packet[Packet.Type.STATE])
         packet = Packet(state)
         self.srv.manage_packet(packet)
         assert dest.state == packet.jsonify
 
-        setting = test_packet[Packet.Type.SETTING]
+        setting = dict(test_packet[Packet.Type.SETTING])
         packet = Packet(setting)
         self.srv.manage_packet(packet)
         assert dest.setting == packet.jsonify
