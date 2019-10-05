@@ -8,7 +8,7 @@ from digi.xbee.models.address import XBee64BitAddress
 from serial.serialutil import SerialException
 from abc import abstractmethod
 
-from pyxbee.exception import InvalidTypeException
+from pyxbee.exception import InvalidTypeException, InvalidFieldsException
 
 log = logging.getLogger(__name__)
 
@@ -229,14 +229,12 @@ class Packet:
 
     @classmethod
     def _decode(cls, data):
+        cls._check_data(data)
         # se viene passato un dizionario aggiorna i
         # valori da un pacchetto vuoto.
         # ORDINE NON IMPORTANTE
         if isinstance(data, dict):
-            if data['type'] not in PACKETS.keys():
-                raise InvalidTypeException
-
-            d = PACKETS[str(data['type'])]
+            d = dict(PACKETS[str(data['type'])])
             d.update(data)
             res = d.values()
         # se viene passato un una lista/tupla/stringa
@@ -248,10 +246,24 @@ class Packet:
             res = [json.loads(item.lower()) if item.lower() in ['true', 'false']
                    else item for item in data.split(';')]
 
-        res = tuple(res)
-        if res[1] not in PACKETS.keys():
+        return tuple(res)
+
+    @classmethod
+    def _check_data(cls, data):
+        if isinstance(data, dict):
+            content = data.values()
+            tipo = data['type']
+        else:
+            content = data if isinstance(data, (list, tuple)) else data.split(';')
+            tipo = content[1]
+
+        # check valid type
+        if tipo not in PACKETS.keys():
             raise InvalidTypeException
-        return res
+
+        # check valid len
+        if len(content) != len(PACKETS[tipo].values()):
+            raise InvalidFieldsException
 
     @property
     def content(self):
@@ -281,7 +293,7 @@ class Packet:
     @property
     def jsonify(self):
         content = list(self.content[::-1])
-        res = PACKETS[str(self.tipo)]
+        res = dict(PACKETS[str(self.tipo)])
 
         for key, _ in res.items():
             res[key] = content.pop()
