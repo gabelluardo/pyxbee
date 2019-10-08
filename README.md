@@ -1,4 +1,4 @@
-## Legenda
+## Legenda (da aggiornare)
 
 ### CAMPI PACCHETT0
 
@@ -7,6 +7,8 @@
     2.  "contenuto"       varia in base al tipo di pacchetto
 
 ### TIPO DI PACCHETTO
+
+Vedi [il protocollo](https://github.com/gabelluardo/pyxbee/issues/24)
 
     0  -> DATI
     1  -> STATE
