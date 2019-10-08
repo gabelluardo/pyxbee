@@ -1,10 +1,13 @@
-# pylint: disable=unused-wildcard-import
-from pyxbee.base import *
-from pyxbee.exception import *
+# pylint: disable=wildcard-import,unused-wildcard-import,attribute-defined-outside-init
 
 import pytest
 import json
 import random
+
+from pyxbee.base import *
+from pyxbee.exception import *
+from pyxbee.packet import *
+
 
 test_packet = {
     '0': {
