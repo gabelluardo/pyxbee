@@ -4,10 +4,8 @@ import pytest
 import json
 import random
 
-from pyxbee.base import *
+from pyxbee import *
 from pyxbee.exception import *
-from pyxbee.packet import *
-
 
 test_packet = {
     '0': {
