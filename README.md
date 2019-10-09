@@ -4,16 +4,26 @@ Modulo di comunicazione per [Marta](https://github.com/gabelluardo/marta)
 
 Fornisce classi di alto livello per interfacciarsi col modulo [digi-xbee](https://github.com/digidotcom/xbee-python) e le antenne xbee
 
-***
 
 ## Installazione
 
+    pip install pyxbee
+
+oppure clonando il repository:
+
+    git clone https://github.com/gabelluardo/pyxbee
+    cd pyxbee/
+    python3 setup.py install
+
+## License
+
+LGPLv3
 
 
+***
 
 
-
-## Legenda (da aggiornare)
+### Legenda (da aggiornare)
 
 #### CAMPI PACCHETT0
 
