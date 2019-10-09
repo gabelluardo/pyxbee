@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pyxbee',
-    version='1.0.0.dev1',
+    version='0.0.1',
     author='Gabriele Belluardo',
     author_email='gabbelo@outlook.it',
     description='Communication module for Marta (Policumbent)',
