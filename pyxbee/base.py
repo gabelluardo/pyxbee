@@ -15,12 +15,12 @@ PORT = '/dev/ttyUSB0'
 BAUD_RATE = 115200
 
 
-# questa classe si interfaccia in con
-# le funzioni di basso livello
-# dello xbee e si occupa i mandare
-# e ricevere raw_message formati da
-# stringhe del tipo {};{};{};{}
 class _Transmitter:
+    # questa classe si interfaccia in con
+    # le funzioni di basso livello
+    # dello xbee e si occupa i mandare
+    # e ricevere raw_message formati da
+    # stringhe del tipo {};{};{};{}
     def __init__(self, port, baud_rate):
         self._device = None
 
@@ -88,8 +88,8 @@ class _Transmitter:
         pass
 
 
-# SERVER mode del transmitter
 class Server(_Transmitter):
+    # SERVER mode del transmitter
     def __init__(self, port=PORT, baud_rate=BAUD_RATE):
         super().__init__(port, baud_rate)
         self._listener = dict()
@@ -112,8 +112,8 @@ class Server(_Transmitter):
             self.web.send_data(packet.encode)
 
 
-# CLIENT mode del transmitter
 class Client(_Transmitter):
+    # CLIENT mode del transmitter
     def __init__(self, port=PORT, baud_rate=BAUD_RATE):
         super().__init__(port, baud_rate)
         self._bike = None
@@ -131,8 +131,8 @@ class Client(_Transmitter):
         self.bike.receive(packet)
 
 
-# classe genitore per la modalita' server e client
 class _SuperBike:
+    # classe genitore per la modalita' server e client
     def __init__(self, code, address, transmitter):
         self._address = address
         self._code = code
@@ -160,15 +160,15 @@ class _SuperBike:
         self.transmitter.send(self.address, data)
 
 
-# questa classe prende instaza dell'antenna in
-# modalita' CLIENT, conserva i pacchetti
-# ricevuti in __memoize e si occupa
-# dell'invio di pacchetti verso il SERVER (marta)
-#
-# code --> codice con cui viene identif. nei pacchetti
-# address --> indirizzo dell'antenna server
-# client --> instanza dell'antenna client
 class Bike(_SuperBike):
+    # questa classe prende instaza dell'antenna in
+    # modalita' CLIENT, conserva i pacchetti
+    # ricevuti in __memoize e si occupa
+    # dell'invio di pacchetti verso il SERVER (marta)
+    #
+    # code --> codice con cui viene identif. nei pacchetti
+    # address --> indirizzo dell'antenna server
+    # client --> instanza dell'antenna client
     def __init__(self, code, address, client, sensors):
         super().__init__(code, address, client)
 
@@ -219,15 +219,15 @@ class Bike(_SuperBike):
         self._memoize.append(packet)
 
 
-# questa classe prende instaza dell'antenna in
-# modalita' SERVER, conserva i pacchetti
-# ricevuti in __memoize e si occupa
-# dell'invio di pacchetti verso il CLIENT (bici)
-#
-# code --> codice con cui viene identif. nei pacchetti
-# address --> indirizzo dell'antenna client
-# server --> instanza dell'antenna server
 class Taurus(_SuperBike):
+    # questa classe prende instaza dell'antenna in
+    # modalita' SERVER, conserva i pacchetti
+    # ricevuti in __memoize e si occupa
+    # dell'invio di pacchetti verso il CLIENT (bici)
+    #
+    # code --> codice con cui viene identif. nei pacchetti
+    # address --> indirizzo dell'antenna client
+    # server --> instanza dell'antenna server
     def __init__(self, code, address, server):
         super().__init__(code, address, server)
 
