@@ -21,10 +21,10 @@ BAUD_RATE = 115200
 # e ricevere raw_message formati da
 # stringhe del tipo {};{};{};{}
 class _Transmitter:
-    def __init__(self):
+    def __init__(self, port, baud_rate):
         self._device = None
 
-        self._open_device(PORT, BAUD_RATE)
+        self._open_device(port, baud_rate)
 
     def __del__(self):
         if self.device is not None:
@@ -90,8 +90,8 @@ class _Transmitter:
 
 # SERVER mode del transmitter
 class Server(_Transmitter):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
+        super().__init__(port, baud_rate)
         self._listener = dict()
 
         self.web = None
@@ -114,8 +114,8 @@ class Server(_Transmitter):
 
 # CLIENT mode del transmitter
 class Client(_Transmitter):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
+        super().__init__(port, baud_rate)
         self._bike = None
 
     @property
