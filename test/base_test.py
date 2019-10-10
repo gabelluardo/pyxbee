@@ -169,12 +169,25 @@ class TestPacket:
         assert len(p2) == len(p3)
 
 
-# Questo test deve essere eseguito
-# con l'antenna NON collegata
 class TestServerNotPlugged:
+    # Questo test deve essere eseguito
+    # con l'antenna NON collegata
     def setup(self):
         self.srv = Server()
         self.srv.listener = Taurus('0', 'listener0', self.srv)
+
+    def test_init(self):
+        Server()
+        Server('ciao', 100)
+
+        with pytest.raises(ValueError):
+            Server('a', 'b')
+
+        with pytest.raises(ValueError):
+            Server(100, 100)
+
+        with pytest.raises(ValueError):
+            Server(100, 'ciao')
 
     def test_device(self):
         assert self.srv.device is None
@@ -214,29 +227,35 @@ class TestServerNotPlugged:
         # TODO: Inserire gli altri pacchetti
 
 
-# @TODO: Aggiungere test classe Server (antenna collegata)
-# Questo test deve essere eseguito
-# con l'antenna collegata
+class TestClientNotPlugged:
+    # Questo test deve essere eseguito
+    # con l'antenna NON collegata
+    pass
+
+
 class TestServer:
+    # @TODO: Aggiungere test classe Server (antenna collegata)
+    # Questo test deve essere eseguito
+    # con l'antenna collegata
     pass
 
 
-# @TODO: Aggiungere test classe Client (antenna collegata)
-# Questo test deve essere eseguito
-# con l'antenna collegata
 class TestClient:
+    # @TODO: Aggiungere test classe Client (antenna collegata)
+    # Questo test deve essere eseguito
+    # con l'antenna collegata
     pass
 
 
-# @TODO: Aggiungere test classe Bike (antenna collegata)
-# Questo test deve essere eseguito
-# con l'antenna collegata
 class TestBike:
+    # @TODO: Aggiungere test classe Bike (antenna collegata)
+    # Questo test deve essere eseguito
+    # con l'antenna collegata
     pass
 
 
-# @TODO: Aggiungere test classe Taurus (antenna collegata)
-# Questo test deve essere eseguito
-# con l'antenna collegata
 class TestTaurus:
+    # @TODO: Aggiungere test classe Taurus (antenna collegata)
+    # Questo test deve essere eseguito
+    # con l'antenna collegata
     pass
