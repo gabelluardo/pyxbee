@@ -143,11 +143,6 @@ class Packet:
     def content(self):
         return self._content
 
-    # TODO: controllare se serve ancora
-    @content.setter
-    def content(self, content):
-        self._content = self._decode(content)
-
     @property
     def dest(self):
         return self.content[0] if len(self) > 0 else None

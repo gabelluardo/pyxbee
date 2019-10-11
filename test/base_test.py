@@ -213,8 +213,13 @@ class TestServerNotPlugged:
             server.listener = list()
 
     def test_manage_packet(self):
-        # TODO: fare test con l'eccezione Packet
         dest = self.srv.listener.get('0')
+
+        with pytest.raises(PacketInstanceExecption):
+            self.srv.manage_packet(dict())
+
+        with pytest.raises(PacketInstanceExecption):
+            self.srv.manage_packet(str())
 
         data = dict(test_packet[Packet.Type.DATA])
         packet = Packet(data)
@@ -279,6 +284,9 @@ class TestClientNotPlugged:
 
         with pytest.raises(InvalidInstanceExeption):
             client.bike = list()
+
+    def test_manage_packet(self):
+        pass
 
 
 class TestServer:
