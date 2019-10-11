@@ -206,7 +206,14 @@ class TestServerNotPlugged:
         server.listener = tau1
         assert server.listener == {'0': tau0, '1': tau1}
 
+        with pytest.raises(InvalidInstanceExeption):
+            server.listener = dict()
+
+        with pytest.raises(InvalidInstanceExeption):
+            server.listener = list()
+
     def test_manage_packet(self):
+        # TODO: fare test con l'eccezione Packet
         dest = self.srv.listener.get('0')
 
         data = dict(test_packet[Packet.Type.DATA])
@@ -230,7 +237,48 @@ class TestServerNotPlugged:
 class TestClientNotPlugged:
     # Questo test deve essere eseguito
     # con l'antenna NON collegata
-    pass
+    def setup(self):
+        self.cln = Client()
+        # TODO: aggiungere sensors
+        self.cln.bike = Bike('0', 'bike0', self.cln, ...)
+
+    def test_init(self):
+        Client()
+        Client('ciao', 100)
+
+        with pytest.raises(ValueError):
+            Client('a', 'b')
+
+        with pytest.raises(ValueError):
+            Client(100, 100)
+
+        with pytest.raises(ValueError):
+            Client(100, 'ciao')
+
+    def test_device(self):
+        assert self.cln.device is None
+
+    def test_address(self):
+        assert self.cln.address == 'None'
+
+    def test_bike(self):
+        client = Client()
+        assert client.bike is None
+
+        bike0 = Bike('0', 'server0', client, ...)
+        bike1 = Bike('1', 'server1', client, ...)
+
+        client.bike = bike0
+        assert client.bike == bike0
+
+        client.bike = bike1
+        assert client.bike == bike1
+
+        with pytest.raises(InvalidInstanceExeption):
+            client.bike = dict()
+
+        with pytest.raises(InvalidInstanceExeption):
+            client.bike = list()
 
 
 class TestServer:
