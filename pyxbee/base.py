@@ -8,6 +8,7 @@ from serial.serialutil import SerialException
 from abc import abstractmethod
 
 from .packet import Packet
+from .exception import (InvalidInstanceExeption, PacketInstanceExecption)
 
 log = logging.getLogger(__name__)
 
@@ -23,14 +24,13 @@ class _Transmitter:
     # stringhe del tipo {};{};{};{}
     def __init__(self, port, baud_rate):
         self._device = None
-
         self._open_device(port, baud_rate)
 
     def __del__(self):
         if self.device is not None:
             if self.device.is_open():
                 self.device.close()
-                log.debug('Device ({}) close'.format(self.device.get_64bit_addr()))
+                log.debug(f'Device ({self.device.get_64bit_addr()}) close')
 
     def _open_device(self, port, baud_rate):
         device = XBeeDevice(port, baud_rate)
@@ -38,7 +38,7 @@ class _Transmitter:
             device.open()
             device.add_data_received_callback(self.receiver)
             self._device = device
-            log.info('Device ({}) connected\n'.format(device.get_64bit_addr()))
+            log.info(f'Device ({device.get_64bit_addr()}) connected\n')
         except (InvalidOperatingModeException, SerialException):
             log.error('Nessuna antenna trovata')
 
@@ -56,7 +56,7 @@ class _Transmitter:
             self.device.send_data_async(RemoteXBeeDevice(
                 self.device, XBee64BitAddress.from_hex_string(address)), packet.encode)
         except (TimeoutException, InvalidPacketException):
-            log.error('Dispositivo ({}) non trovato\n'.format(address))
+            log.error(f'Dispositivo ({address}) non trovato\n')
         except AttributeError:
             log.error('SEND: Antenna non collegata\n')
 
@@ -80,55 +80,12 @@ class _Transmitter:
         if xbee_message != '':
             raw = xbee_message.data.decode()
             packet = Packet(raw)
-            log.debug('Received packet: {}'.format(packet))
+            log.debug(f'Received packet: {packet}')
             self.manage_packet(packet)
 
     @abstractmethod
     def manage_packet(self, packet):
         pass
-
-
-class Server(_Transmitter):
-    # SERVER mode del transmitter
-    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
-        super().__init__(port, baud_rate)
-        self._listener = dict()
-
-        self.web = None
-
-    @property
-    def listener(self):
-        return self._listener
-
-    @listener.setter
-    def listener(self, l):
-        self._listener.update({l.code: l})
-
-    # DIREZIONE: bici --> server
-    def manage_packet(self, packet):
-        dest = self.listener.get(packet.dest)
-        dest.receive(packet)
-        if self.web is not None and packet.tipo == Packet.Type.DATA:
-            self.web.send_data(packet.encode)
-
-
-class Client(_Transmitter):
-    # CLIENT mode del transmitter
-    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
-        super().__init__(port, baud_rate)
-        self._bike = None
-
-    @property
-    def bike(self):
-        return self._bike
-
-    @bike.setter
-    def bike(self, b):
-        self._bike = b
-
-    # DIREZIONE: server --> bici
-    def manage_packet(self, packet):
-        self.bike.receive(packet)
 
 
 class _SuperBike:
@@ -156,8 +113,9 @@ class _SuperBike:
 
     # DIREZIONE: server --> bici
     def send(self, packet):
-        data = packet if isinstance(packet, Packet) else Packet(packet)
-        self.transmitter.send(self.address, data)
+        if not isinstance(packet, Packet):
+            packet = Packet(packet)
+        self.transmitter.send(self.address, packet)
 
 
 class Bike(_SuperBike):
@@ -179,35 +137,46 @@ class Bike(_SuperBike):
         # come client dell'antenna
         self.transmitter.bike = self
 
-        # memorizza i pacchetti ricevuti  (un pacchetto per tipo)
+        # memorizza i pacchetti ricevuti (un pacchetto per tipo)
         self._memoize = list()
 
     def __len__(self):
         return len(self._memoize)
 
     def __str__(self):
-        return '{} -- {}'.format(self.code, self.transmitter.address)
+        return f'{self.code} -- {self.transmitter.address}'
 
     @property
     def packets(self):
         return self._memoize
 
     # DIREZIONE: bici -> server
-    def blind_send(self, packet: Packet):
+    def blind_send(self, packet):
+        if not isinstance(packet, Packet):
+            raise PacketInstanceExecption
         self.send(packet)
 
-    def send_data(self, d: dict):
+    def send_data(self, d):
+        if not isinstance(d, dict):
+            raise InvalidInstanceExeption
+
         data = {'dest': self.code, 'type': Packet.Type.DATA}
         data.update(d)
         self.send(data)
 
     # NOTE: probabilmente da deprecare
-    def send_state(self, s: dict):
+    def send_state(self, s):
+        if not isinstance(s, dict):
+            raise InvalidInstanceExeption
+
         state = {'dest': self.code, 'type': Packet.Type.STATE}
         state.update(s)
         self.send(state)
 
-    def send_setting(self, s: dict):
+    def send_setting(self, s):
+        if not isinstance(s, dict):
+            raise InvalidInstanceExeption
+
         settings = {'dest': self.code, 'type': Packet.Type.SETTING}
         settings.update(s)
         self.send(settings)
@@ -216,9 +185,12 @@ class Bike(_SuperBike):
 
     # DIREZIONE: server --> bici
     def receive(self, packet):
+        if not isinstance(packet, Packet):
+            raise PacketInstanceExecption
         self._memoize.append(packet)
 
 
+# TODO: aggiungere controllo instanze
 class Taurus(_SuperBike):
     # questa classe prende instaza dell'antenna in
     # modalita' SERVER, conserva i pacchetti
@@ -245,7 +217,7 @@ class Taurus(_SuperBike):
         self._memoize = dict()
 
     def __str__(self):
-        return '{} -- {}'.format(self.code, self.address)
+        return f'{self.code} -- {self.address}'
 
     @property
     def history(self):
@@ -273,3 +245,55 @@ class Taurus(_SuperBike):
     # DIREZIONE: bici --> server
     def receive(self, packet):
         self._memoize.update({packet.tipo: packet})
+
+
+class Server(_Transmitter):
+    # SERVER mode del transmitter
+    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
+        super().__init__(port, baud_rate)
+        self._listener = dict()
+
+        self.web = None
+
+    @property
+    def listener(self):
+        return self._listener
+
+    @listener.setter
+    def listener(self, l):
+        if not isinstance(l, Taurus):
+            raise InvalidInstanceExeption
+        self._listener.update({l.code: l})
+
+    # DIREZIONE: bici --> server
+    def manage_packet(self, packet):
+        if not isinstance(packet, Packet):
+            raise PacketInstanceExecption
+        dest = self.listener.get(packet.dest)
+        dest.receive(packet)
+
+        if self.web is not None and packet.tipo == Packet.Type.DATA:
+            self.web.send_data(packet.encode)
+
+
+class Client(_Transmitter):
+    # CLIENT mode del transmitter
+    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
+        super().__init__(port, baud_rate)
+        self._bike = None
+
+    @property
+    def bike(self):
+        return self._bike
+
+    @bike.setter
+    def bike(self, b):
+        if not isinstance(b, Bike):
+            raise InvalidInstanceExeption
+        self._bike = b
+
+    # DIREZIONE: server --> bici
+    def manage_packet(self, packet):
+        if not isinstance(packet, Packet):
+            raise PacketInstanceExecption
+        self.bike.receive(packet)
