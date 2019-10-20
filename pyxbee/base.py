@@ -8,7 +8,7 @@ from serial.serialutil import SerialException
 from abc import abstractmethod
 
 from .packet import Packet
-from .exception import (InvalidInstanceExeption, PacketInstanceExecption)
+from .exception import (InvalidInstanceException, PacketInstanceException, InvalidCodeException)
 
 log = logging.getLogger(__name__)
 
@@ -176,12 +176,12 @@ class Bike(_SuperBike):
 
     def blind_send(self, packet):
         if not isinstance(packet, Packet):
-            raise PacketInstanceExecption
+            raise PacketInstanceException
         self.send(packet)
 
     def send_data(self, d):
         if not isinstance(d, dict):
-            raise InvalidInstanceExeption
+            raise InvalidInstanceException
 
         data = {'dest': self.code, 'type': Packet.Type.DATA}
         data.update(d)
@@ -190,7 +190,7 @@ class Bike(_SuperBike):
     # NOTE: probabilmente da deprecare
     def send_state(self, s):
         if not isinstance(s, dict):
-            raise InvalidInstanceExeption
+            raise InvalidInstanceException
 
         state = {'dest': self.code, 'type': Packet.Type.STATE}
         state.update(s)
@@ -198,7 +198,7 @@ class Bike(_SuperBike):
 
     def send_setting(self, s):
         if not isinstance(s, dict):
-            raise InvalidInstanceExeption
+            raise InvalidInstanceException
 
         settings = {'dest': self.code, 'type': Packet.Type.SETTING}
         settings.update(s)
@@ -210,7 +210,7 @@ class Bike(_SuperBike):
 
     def receive(self, packet):
         if not isinstance(packet, Packet):
-            raise PacketInstanceExecption
+            raise PacketInstanceException
         self._memoize.append(packet)
 
 
@@ -291,14 +291,20 @@ class Server(_Transmitter):
     @listener.setter
     def listener(self, l):
         if not isinstance(l, Taurus):
-            raise InvalidInstanceExeption
+            raise InvalidInstanceException
+
+        if l.code in self.listener.keys():
+            print(l.code)
+            print(self.listener.keys())
+            raise InvalidCodeException
+
         self._listener.update({l.code: l})
 
     # DIREZIONE: bici --> server
 
     def manage_packet(self, packet):
         if not isinstance(packet, Packet):
-            raise PacketInstanceExecption
+            raise PacketInstanceException
         dest = self.listener.get(packet.dest)
         dest.receive(packet)
 
@@ -320,12 +326,12 @@ class Client(_Transmitter):
     @bike.setter
     def bike(self, b):
         if not isinstance(b, Bike):
-            raise InvalidInstanceExeption
+            raise InvalidInstanceException
         self._bike = b
 
     # DIREZIONE: server --> bici
 
     def manage_packet(self, packet):
         if not isinstance(packet, Packet):
-            raise PacketInstanceExecption
+            raise PacketInstanceException
         self.bike.receive(packet)

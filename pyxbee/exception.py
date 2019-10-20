@@ -18,7 +18,7 @@ class InvalidFieldsException(PyxbeeException):
         PyxbeeException.__init__(self, _message)
 
 
-class InvalidInstanceExeption(PyxbeeException):
+class InvalidInstanceException(PyxbeeException):
 
     __DEFAULT_MESSAGE = ""
 
@@ -26,9 +26,17 @@ class InvalidInstanceExeption(PyxbeeException):
         PyxbeeException.__init__(self, _message)
 
 
-class PacketInstanceExecption(PyxbeeException):
+class PacketInstanceException(PyxbeeException):
 
     __DEFAULT_MESSAGE = "This accepts only Packet instances"
+
+    def __init__(self, _message=__DEFAULT_MESSAGE):
+        PyxbeeException.__init__(self, _message)
+
+
+class InvalidCodeException(PyxbeeException):
+
+    __DEFAULT_MESSAGE = "Code already used in this instance"
 
     def __init__(self, _message=__DEFAULT_MESSAGE):
         PyxbeeException.__init__(self, _message)
