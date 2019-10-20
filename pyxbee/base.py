@@ -17,11 +17,14 @@ BAUD_RATE = 115200
 
 
 class _Transmitter:
-    # questa classe si interfaccia in con
-    # le funzioni di basso livello
-    # dello xbee e si occupa i mandare
-    # e ricevere raw_message formati da
-    # stringhe del tipo {};{};{};{}
+    """
+    Questa classe si interfaccia in con
+    le funzioni di basso livello
+    dello xbee e si occupa i mandare
+    e ricevere raw_message formati da
+    stringhe del tipo {};{};{};{}
+    """
+
     def __init__(self, port, baud_rate):
         self._device = None
         self._open_device(port, baud_rate)
@@ -51,6 +54,7 @@ class _Transmitter:
         return self.device.get_64bit_addr() if self.device is not None else 'None'
 
     # DIREZIONE: server --> bici
+
     def send(self, address, packet):
         try:
             self.device.send_data_async(RemoteXBeeDevice(
@@ -61,9 +65,10 @@ class _Transmitter:
             log.error('SEND: Antenna non collegata\n')
 
     def send_sync(self, address, packet):
-        # aspetta l'ack, se scatta il
-        # timeout e non riceve risposta
-        # lancia l'eccezione
+        """Aspetta l'ack, se scatta il
+        timeout e non riceve risposta
+        lancia l'eccezione
+        """
         try:
             self.device.send_data(RemoteXBeeDevice(
                 self.device, XBee64BitAddress.from_hex_string(address)), packet.encode)
@@ -76,6 +81,7 @@ class _Transmitter:
         self.device.send_data_broadcast(packet.encode)
 
     # DIREZIONE: bici --> server
+
     def receiver(self, xbee_message):
         if xbee_message != '':
             raw = xbee_message.data.decode()
@@ -89,7 +95,8 @@ class _Transmitter:
 
 
 class _SuperBike:
-    # classe genitore per la modalita' server e client
+    """Classe genitore per la modalita' server e client"""
+
     def __init__(self, code, address, transmitter):
         self._address = address
         self._code = code
@@ -112,6 +119,7 @@ class _SuperBike:
         pass
 
     # DIREZIONE: server --> bici
+
     def send(self, packet):
         if not isinstance(packet, Packet):
             packet = Packet(packet)
@@ -119,14 +127,17 @@ class _SuperBike:
 
 
 class Bike(_SuperBike):
-    # questa classe prende instaza dell'antenna in
-    # modalita' CLIENT, conserva i pacchetti
-    # ricevuti in __memoize e si occupa
-    # dell'invio di pacchetti verso il SERVER (marta)
-    #
-    # code --> codice con cui viene identif. nei pacchetti
-    # address --> indirizzo dell'antenna server
-    # client --> instanza dell'antenna client
+    """
+    Questa classe prende instaza dell'antenna in
+    modalita' CLIENT, conserva i pacchetti
+    ricevuti in __memoize e si occupa
+    dell'invio di pacchetti verso il SERVER (marta)
+
+    code --> codice con cui viene identif. nei pacchetti
+    address --> indirizzo dell'antenna server
+    client --> instanza dell'antenna client
+    """
+
     def __init__(self, code, address, client, sensors):
         super().__init__(code, address, client)
 
@@ -151,6 +162,7 @@ class Bike(_SuperBike):
         return self._memoize
 
     # DIREZIONE: bici -> server
+
     def blind_send(self, packet):
         if not isinstance(packet, Packet):
             raise PacketInstanceExecption
@@ -184,6 +196,7 @@ class Bike(_SuperBike):
     # TODO: Inserire gli altri pacchetti
 
     # DIREZIONE: server --> bici
+
     def receive(self, packet):
         if not isinstance(packet, Packet):
             raise PacketInstanceExecption
@@ -192,14 +205,17 @@ class Bike(_SuperBike):
 
 # TODO: aggiungere controllo instanze
 class Taurus(_SuperBike):
-    # questa classe prende instaza dell'antenna in
-    # modalita' SERVER, conserva i pacchetti
-    # ricevuti in __memoize e si occupa
-    # dell'invio di pacchetti verso il CLIENT (bici)
-    #
-    # code --> codice con cui viene identif. nei pacchetti
-    # address --> indirizzo dell'antenna client
-    # server --> instanza dell'antenna server
+    """
+    Questa classe prende instaza dell'antenna in
+    modalita' SERVER, conserva i pacchetti
+    ricevuti in __memoize e si occupa
+    dell'invio di pacchetti verso il CLIENT (bici)
+
+    code --> codice con cui viene identif. nei pacchetti
+    address --> indirizzo dell'antenna client
+    server --> instanza dell'antenna server
+    """
+
     def __init__(self, code, address, server):
         super().__init__(code, address, server)
 
@@ -243,12 +259,14 @@ class Taurus(_SuperBike):
     # TODO: Inserire gli altri pacchetti
 
     # DIREZIONE: bici --> server
+
     def receive(self, packet):
         self._memoize.update({packet.tipo: packet})
 
 
 class Server(_Transmitter):
-    # SERVER mode del transmitter
+    """SERVER mode del transmitter"""
+
     def __init__(self, port=PORT, baud_rate=BAUD_RATE):
         super().__init__(port, baud_rate)
         self._listener = dict()
@@ -266,6 +284,7 @@ class Server(_Transmitter):
         self._listener.update({l.code: l})
 
     # DIREZIONE: bici --> server
+
     def manage_packet(self, packet):
         if not isinstance(packet, Packet):
             raise PacketInstanceExecption
@@ -277,7 +296,8 @@ class Server(_Transmitter):
 
 
 class Client(_Transmitter):
-    # CLIENT mode del transmitter
+    """CLIENT mode del transmitter"""
+
     def __init__(self, port=PORT, baud_rate=BAUD_RATE):
         super().__init__(port, baud_rate)
         self._bike = None
@@ -293,6 +313,7 @@ class Client(_Transmitter):
         self._bike = b
 
     # DIREZIONE: server --> bici
+
     def manage_packet(self, packet):
         if not isinstance(packet, Packet):
             raise PacketInstanceExecption
