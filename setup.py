@@ -1,11 +1,16 @@
 import setuptools
+import re
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
+with open('pyxbee/__init__.py', 'r') as f:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+                        f.read(), re.MULTILINE).group(1)
+
 setuptools.setup(
     name='pyxbee',
-    version='0.1',
+    version=version,
     author='Gabriele Belluardo',
     author_email='gabbelo@outlook.it',
     description='Communication module for Marta (Policumbent)',
