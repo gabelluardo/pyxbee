@@ -25,8 +25,11 @@ class _Transmitter:
     stringhe del tipo {};{};{};{}
     """
 
-    def __init__(self, port, baud_rate):
+    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
         self._device = None
+        self._port = port
+        self._baud_rate = baud_rate
+
         self._open_device(port, baud_rate)
 
     def __del__(self):
@@ -52,6 +55,14 @@ class _Transmitter:
     @property
     def address(self):
         return self.device.get_64bit_addr() if self.device is not None else 'None'
+
+    @property
+    def port(self):
+        return self._port
+
+    @property
+    def baud_rate(self):
+        return self._baud_rate
 
     # DIREZIONE: server --> bici
 
@@ -267,8 +278,8 @@ class Taurus(_SuperBike):
 class Server(_Transmitter):
     """SERVER mode del transmitter"""
 
-    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
-        super().__init__(port, baud_rate)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._listener = dict()
 
         self.web = None
@@ -298,8 +309,8 @@ class Server(_Transmitter):
 class Client(_Transmitter):
     """CLIENT mode del transmitter"""
 
-    def __init__(self, port=PORT, baud_rate=BAUD_RATE):
-        super().__init__(port, baud_rate)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._bike = None
 
     @property

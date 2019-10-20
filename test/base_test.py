@@ -178,7 +178,12 @@ class TestServerNotPlugged:
 
     def test_init(self):
         Server()
-        Server('ciao', 100)
+
+        s1 = Server('ciao', 100)
+        assert s1.port == 'ciao' and s1.baud_rate == 100
+
+        s2 = Server(port='ciao', baud_rate=100)
+        assert s2.port == 'ciao' and s2.baud_rate == 100
 
         with pytest.raises(ValueError):
             Server('a', 'b')
@@ -249,7 +254,12 @@ class TestClientNotPlugged:
 
     def test_init(self):
         Client()
-        Client('ciao', 100)
+
+        c1 = Client('ciao', 100)
+        assert c1.port == 'ciao' and c1.baud_rate == 100
+
+        c2 = Client(port='ciao', baud_rate=100)
+        assert c2.port == 'ciao' and c2.baud_rate == 100
 
         with pytest.raises(ValueError):
             Client('a', 'b')
