@@ -4,4 +4,4 @@ from .exception import *
 
 __all__ = ['Bike', 'Client', 'Server', 'Taurus', 'Packet', 'base', 'packet', 'exception']
 
-__version__ = '0.2.dev1'
+__version__ = '0.2'

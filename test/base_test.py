@@ -177,7 +177,7 @@ class TestPacket:
         assert len(p2) == len(p3)
 
 
-class TestServerNotPlugged:
+class TestServer:
     # Questo test puo' essere eseguito
     # con l'antenna NON collegata
     def test_init(self):
@@ -246,7 +246,7 @@ class TestServerNotPlugged:
         # TODO: Inserire gli altri pacchetti
 
 
-class TestClientNotPlugged:
+class TestClient:
     # Questo test puo' essere eseguito
     # con l'antenna NON collegata
     def test_init(self):
@@ -315,20 +315,6 @@ class TestClientNotPlugged:
 
         assert len(bike) == 3
         assert bike.packets == {packet1, packet2, packet3}
-
-
-class TestServer:
-    # @TODO: Aggiungere test classe Server (antenna collegata)
-    # Questo test deve essere eseguito
-    # con l'antenna collegata
-    pass
-
-
-class TestClient:
-    # @TODO: Aggiungere test classe Client (antenna collegata)
-    # Questo test deve essere eseguito
-    # con l'antenna collegata
-    pass
 
 
 class TestBike:
