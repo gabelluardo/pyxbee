@@ -4,9 +4,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pylint = "*"
+autopep8 = "*"
+pytest = "*"
 
 [packages]
 digi-xbee = "*"
+ordered-set = "*"
 
 [requires]
 python_version = "3.6"
