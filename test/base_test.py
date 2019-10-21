@@ -9,7 +9,7 @@ from pyxbee.exception import *
 
 test_packet = {
     '0': {
-        'dest': '0',
+        'dest': 'X',
         'type': '0',
         'heartrate': str(random.random()),
         'power': str(random.random()),
@@ -20,7 +20,7 @@ test_packet = {
         'gear': str(random.random())
     },
     '1': {
-        'dest': '0',
+        'dest': 'X',
         'type': '1',
         'log': bool(random.randint(0, 1)),
         'video': bool(random.randint(0, 1)),
@@ -33,12 +33,12 @@ test_packet = {
         'calibration': bool(random.randint(0, 1))
     },
     '2': {
-        'dest': '0',
+        'dest': 'X',
         'type': '2',
         'valore': str(random.randint(0, 7))
     },
     '3': {
-        'dest': '0',
+        'dest': 'X',
         'type': '3',
         'circonferenza': str(random.random()),
         'run': str(random.random()),
@@ -52,12 +52,12 @@ test_packet = {
         'p13': bool(random.randint(0, 1))
     },
     '4': {
-        'dest': '0',
+        'dest': 'X',
         'type': '4',
         'valore': str(random.randint(0, 13))
     },
     '5': {
-        'dest': '0',
+        'dest': 'X',
         'type': '5',
         'messaggio': str(random.random()),
         'priorita': str(random.randint(0, 5)),
@@ -65,12 +65,12 @@ test_packet = {
         'timeout': str(random.random())
     },
     '6': {
-        'dest': '0',
+        'dest': 'X',
         'type': '6',
         'valore': str(random.randint(0, 1))
     },
     '7': {
-        'dest': '0',
+        'dest': 'X',
         'type': '7',
         'value': bool(random.randint(0, 1)),
         'name_file': str(random.random())
@@ -170,12 +170,8 @@ class TestPacket:
 
 
 class TestServerNotPlugged:
-    # Questo test deve essere eseguito
+    # Questo test puo' essere eseguito
     # con l'antenna NON collegata
-    def setup(self):
-        self.srv = Server()
-        self.srv.listener = Taurus('0', 'listener0', self.srv)
-
     def test_init(self):
         Server()
 
@@ -194,11 +190,10 @@ class TestServerNotPlugged:
         with pytest.raises(ValueError):
             Server(100, 'ciao')
 
-    def test_device(self):
-        assert self.srv.device is None
-
-    def test_address(self):
-        assert self.srv.address == 'None'
+    def test_parent(self):
+        s = Server()
+        assert s.device is None
+        assert s.address == 'None'
 
     def test_listener(self):
         server = Server()
@@ -207,51 +202,45 @@ class TestServerNotPlugged:
         tau0 = Taurus('0', 'listener0', server)
         tau1 = Taurus('1', 'listener1', server)
 
-        server.listener = tau0
-        server.listener = tau1
         assert server.listener == {'0': tau0, '1': tau1}
 
-        with pytest.raises(InvalidInstanceExeption):
+        with pytest.raises(InvalidInstanceException):
             server.listener = dict()
 
-        with pytest.raises(InvalidInstanceExeption):
+        with pytest.raises(InvalidInstanceException):
             server.listener = list()
 
     def test_manage_packet(self):
-        dest = self.srv.listener.get('0')
+        server = Server()
+        dest = Taurus('X', 'listenerX', server)
 
-        with pytest.raises(PacketInstanceExecption):
-            self.srv.manage_packet(dict())
+        with pytest.raises(PacketInstanceException):
+            server.manage_packet(dict())
 
-        with pytest.raises(PacketInstanceExecption):
-            self.srv.manage_packet(str())
+        with pytest.raises(PacketInstanceException):
+            server.manage_packet(str())
 
         data = dict(test_packet[Packet.Type.DATA])
         packet = Packet(data)
-        self.srv.manage_packet(packet)
+        server.manage_packet(packet)
         assert dest.data == packet.jsonify
 
         state = dict(test_packet[Packet.Type.STATE])
         packet = Packet(state)
-        self.srv.manage_packet(packet)
+        server.manage_packet(packet)
         assert dest.state == packet.jsonify
 
         setting = dict(test_packet[Packet.Type.SETTING])
         packet = Packet(setting)
-        self.srv.manage_packet(packet)
+        server.manage_packet(packet)
         assert dest.setting == packet.jsonify
 
         # TODO: Inserire gli altri pacchetti
 
 
 class TestClientNotPlugged:
-    # Questo test deve essere eseguito
+    # Questo test puo' essere eseguito
     # con l'antenna NON collegata
-    def setup(self):
-        self.cln = Client()
-        # TODO: aggiungere sensors
-        self.cln.bike = Bike('0', 'bike0', self.cln, ...)
-
     def test_init(self):
         Client()
 
@@ -270,33 +259,54 @@ class TestClientNotPlugged:
         with pytest.raises(ValueError):
             Client(100, 'ciao')
 
-    def test_device(self):
-        assert self.cln.device is None
-
-    def test_address(self):
-        assert self.cln.address == 'None'
+    def test_parent(self):
+        c = Client()
+        assert c.device is None
+        assert c.address == 'None'
 
     def test_bike(self):
         client = Client()
         assert client.bike is None
 
-        bike0 = Bike('0', 'server0', client, ...)
-        bike1 = Bike('1', 'server1', client, ...)
-
-        client.bike = bike0
+        bike0 = Bike('0', 'server0', ..., client)
         assert client.bike == bike0
 
-        client.bike = bike1
-        assert client.bike == bike1
+        with pytest.raises(InvalidInstanceException):
+            Bike('1', 'server1', ..., client)
 
-        with pytest.raises(InvalidInstanceExeption):
+        with pytest.raises(InvalidInstanceException):
+            client.bike = bike0
+
+        with pytest.raises(InvalidInstanceException):
             client.bike = dict()
 
-        with pytest.raises(InvalidInstanceExeption):
+        with pytest.raises(InvalidInstanceException):
             client.bike = list()
 
     def test_manage_packet(self):
-        pass
+        client = Client()
+        bike = Bike('0', 'bike0', ..., client)
+
+        with pytest.raises(PacketInstanceException):
+            client.manage_packet(dict())
+
+        with pytest.raises(PacketInstanceException):
+            client.manage_packet(str())
+
+        data = dict(test_packet[Packet.Type.DATA])
+        packet1 = Packet(data)
+        client.manage_packet(packet1)
+
+        state = dict(test_packet[Packet.Type.STATE])
+        packet2 = Packet(state)
+        client.manage_packet(packet2)
+
+        setting = dict(test_packet[Packet.Type.SETTING])
+        packet3 = Packet(setting)
+        client.manage_packet(packet3)
+
+        assert len(bike) == 3
+        assert bike.packets == {packet1, packet2, packet3}
 
 
 class TestServer:
@@ -321,7 +331,228 @@ class TestBike:
 
 
 class TestTaurus:
-    # @TODO: Aggiungere test classe Taurus (antenna collegata)
-    # Questo test deve essere eseguito
-    # con l'antenna collegata
-    pass
+    def setup(self):
+        self.server = Server()
+        self.taurus = Taurus('X', 'listenerX', self.server)
+
+    def test_init(self):
+        tau0 = Taurus('0', 'listener0', self.server)
+        tau1 = Taurus(code='1', address='listener1', server=self.server)
+
+        assert tau0.code == '0'
+        assert tau1.code == '1'
+        assert tau0.address == 'listener0'
+        assert tau1.address == 'listener1'
+
+        with pytest.raises(InvalidCodeException):
+            Taurus('X', 'listenerX', self.server)
+
+        assert tau0 in self.server.listener.values()
+        assert tau1 in self.server.listener.values()
+
+        assert self.taurus in self.server.listener.values()
+
+    def test_data(self):
+        tau0 = Taurus('0', 'listener0', self.server)
+        tau1 = Taurus('1', 'listener1', self.server)
+
+        assert tau0.data == {}
+        assert tau1.data == {}
+
+        packet1 = Packet({
+            'dest': '0',
+            'type': '0',
+            'heartrate': str(random.random()),
+            'power': str(random.random()),
+            'cadence': str(random.random()),
+            'distance': str(random.random()),
+            'speed': str(random.random()),
+            'time': str(random.random()),
+            'gear': str(random.random())
+        })
+        self.server.manage_packet(packet1)
+
+        assert tau0.data == packet1.jsonify
+        assert tau1.data == {}
+
+        packet2 = Packet({
+            'dest': '1',
+            'type': '0',
+            'heartrate': str(random.random()),
+            'power': str(random.random()),
+            'cadence': str(random.random()),
+            'distance': str(random.random()),
+            'speed': str(random.random()),
+            'time': str(random.random()),
+            'gear': str(random.random())
+        })
+        self.server.manage_packet(packet2)
+
+        assert tau0.data == packet1.jsonify
+        assert tau1.data == packet2.jsonify
+
+        packet3 = Packet({
+            'dest': '1',
+            'type': '0',
+            'heartrate': str(random.random()),
+            'power': str(random.random()),
+            'cadence': str(random.random()),
+            'distance': str(random.random()),
+            'speed': str(random.random()),
+            'time': str(random.random()),
+            'gear': str(random.random())
+        })
+        self.server.manage_packet(packet3)
+
+        assert tau0.data == packet1.jsonify
+        assert tau1.data == packet3.jsonify
+
+        # test per la funzione di history
+        assert tau0.history == [packet1.jsonify]
+        assert tau1.history == [packet2.jsonify, packet3.jsonify]
+
+    def test_state(self):
+        tau0 = Taurus('0', 'listener0', self.server)
+        tau1 = Taurus('1', 'listener1', self.server)
+
+        assert tau0.state == {}
+        assert tau1.state == {}
+
+        packet1 = Packet({
+            'dest': '0',
+            'type': '1',
+            'log': bool(random.randint(0, 1)),
+            'video': bool(random.randint(0, 1)),
+            'ant': bool(random.randint(0, 1)),
+            'video_running': bool(random.randint(0, 1)),
+            'video_recording': bool(random.randint(0, 1)),
+            'powermeter_running': bool(random.randint(0, 1)),
+            'heartrate_running': bool(random.randint(0, 1)),
+            'speed_running': bool(random.randint(0, 1)),
+            'calibration': bool(random.randint(0, 1))
+        })
+        self.server.manage_packet(packet1)
+
+        assert tau0.state == packet1.jsonify
+        assert tau1.state == {}
+
+        packet2 = Packet({
+            'dest': '1',
+            'type': '1',
+            'log': bool(random.randint(0, 1)),
+            'video': bool(random.randint(0, 1)),
+            'ant': bool(random.randint(0, 1)),
+            'video_running': bool(random.randint(0, 1)),
+            'video_recording': bool(random.randint(0, 1)),
+            'powermeter_running': bool(random.randint(0, 1)),
+            'heartrate_running': bool(random.randint(0, 1)),
+            'speed_running': bool(random.randint(0, 1)),
+            'calibration': bool(random.randint(0, 1))
+        })
+        self.server.manage_packet(packet2)
+
+        assert tau0.state == packet1.jsonify
+        assert tau1.state == packet2.jsonify
+
+        packet3 = Packet({
+            'dest': '1',
+            'type': '1',
+            'log': bool(random.randint(0, 1)),
+            'video': bool(random.randint(0, 1)),
+            'ant': bool(random.randint(0, 1)),
+            'video_running': bool(random.randint(0, 1)),
+            'video_recording': bool(random.randint(0, 1)),
+            'powermeter_running': bool(random.randint(0, 1)),
+            'heartrate_running': bool(random.randint(0, 1)),
+            'speed_running': bool(random.randint(0, 1)),
+            'calibration': bool(random.randint(0, 1))
+        })
+        self.server.manage_packet(packet3)
+
+        assert tau0.state == packet1.jsonify
+        assert tau1.state == packet3.jsonify
+
+    def test_setting(self):
+        tau0 = Taurus('0', 'listener0', self.server)
+        tau1 = Taurus('1', 'listener1', self.server)
+
+        assert tau0.setting == {}
+        assert tau1.setting == {}
+
+        packet1 = Packet({
+            'dest': '0',
+            'type': '3',
+            'circonferenza': str(random.random()),
+            'run': str(random.random()),
+            'log': bool(random.randint(0, 1)),
+            'csv': bool(random.randint(0, 1)),
+            'ant': bool(random.randint(0, 1)),
+            'potenza': str(random.random()),
+            'led': str(random.random()),
+            'calibration_value': str(random.random()),
+            'update': str(random.random()),
+            'p13': bool(random.randint(0, 1))})
+        self.server.manage_packet(packet1)
+
+        assert tau0.setting == packet1.jsonify
+        assert tau1.setting == {}
+
+        packet2 = Packet({
+            'dest': '1',
+            'type': '3',
+            'circonferenza': str(random.random()),
+            'run': str(random.random()),
+            'log': bool(random.randint(0, 1)),
+            'csv': bool(random.randint(0, 1)),
+            'ant': bool(random.randint(0, 1)),
+            'potenza': str(random.random()),
+            'led': str(random.random()),
+            'calibration_value': str(random.random()),
+            'update': str(random.random()),
+            'p13': bool(random.randint(0, 1))
+        })
+        self.server.manage_packet(packet2)
+
+        assert tau0.setting == packet1.jsonify
+        assert tau1.setting == packet2.jsonify
+
+        packet3 = Packet({
+            'dest': '1',
+            'type': '3',
+            'circonferenza': str(random.random()),
+            'run': str(random.random()),
+            'log': bool(random.randint(0, 1)),
+            'csv': bool(random.randint(0, 1)),
+            'ant': bool(random.randint(0, 1)),
+            'potenza': str(random.random()),
+            'led': str(random.random()),
+            'calibration_value': str(random.random()),
+            'update': str(random.random()),
+            'p13': bool(random.randint(0, 1))
+        })
+        self.server.manage_packet(packet3)
+
+        assert tau0.setting == packet1.jsonify
+        assert tau1.setting == packet3.jsonify
+
+    def test_receive(self):
+        with pytest.raises(PacketInstanceException):
+            self.taurus.receive(dict())
+
+        with pytest.raises(PacketInstanceException):
+            self.taurus.receive(str())
+
+        data = dict(test_packet[Packet.Type.DATA])
+        packet = Packet(data)
+        self.taurus.receive(packet)
+        assert self.taurus.data == packet.jsonify
+
+        state = dict(test_packet[Packet.Type.STATE])
+        packet = Packet(state)
+        self.taurus.receive(packet)
+        assert self.taurus.state == packet.jsonify
+
+        setting = dict(test_packet[Packet.Type.SETTING])
+        packet = Packet(setting)
+        self.taurus.receive(packet)
+        assert self.taurus.setting == packet.jsonify
