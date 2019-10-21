@@ -151,7 +151,7 @@ class Bike(_SuperBike):
     client --> instanza dell'antenna client
     """
 
-    def __init__(self, code, address, client, sensors):
+    def __init__(self, code, address, sensors, client):
         super().__init__(code, address, client)
 
         # memorizza le instanze dei valori utili
@@ -161,8 +161,8 @@ class Bike(_SuperBike):
         # come client dell'antenna
         self.transmitter.bike = self
 
-        # memorizza i pacchetti ricevuti (un pacchetto per tipo)
-        self._memoize = list()
+        # memorizza tutti i pacchetti ricevuti
+        self._memoize = OrderedSet()
 
     def __len__(self):
         return len(self._memoize)
@@ -330,6 +330,8 @@ class Client(_Transmitter):
     @bike.setter
     def bike(self, b):
         if not isinstance(b, Bike):
+            raise InvalidInstanceException
+        if self._bike is not None:
             raise InvalidInstanceException
         self._bike = b
 
