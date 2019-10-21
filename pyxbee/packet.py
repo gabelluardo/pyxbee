@@ -6,6 +6,7 @@ from .exception import InvalidTypeException, InvalidFieldsException
 log = logging.getLogger(__name__)
 
 PACKETS = {
+    # DATA
     '0': {
         'dest': '',
         'type': '0',
@@ -17,6 +18,7 @@ PACKETS = {
         'time': '',
         'gear': ''
     },
+    # STATE
     '1': {
         'dest': '',
         'type': '1',
@@ -30,11 +32,13 @@ PACKETS = {
         'speed_running': '',
         'calibration': ''
     },
+    # NOTICE
     '2': {
         'dest': '',
         'type': '2',
         'valore': ''
     },
+    # SETTINGS
     '3': {
         'dest': '',
         'type': '3',
@@ -49,11 +53,13 @@ PACKETS = {
         'update': '',
         'p13': ''
     },
+    # SIGNAL
     '4': {
         'dest': '',
         'type': '4',
         'valore': ''
     },
+    # MESSAGE
     '5': {
         'dest': '',
         'type': '5',
@@ -62,11 +68,13 @@ PACKETS = {
         'durata': '',
         'timeout': ''
     },
+    # RASPBERRY
     '6': {
         'dest': '',
         'type': '6',
         'valore': ''
     },
+    # VIDEO
     '7': {
         'dest': '',
         'type': '7',

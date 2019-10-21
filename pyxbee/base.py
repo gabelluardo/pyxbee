@@ -186,7 +186,10 @@ class Taurus(_SuperBike):
     server --> instanza dell'antenna server
     """
 
-    def __init__(self, code, address, server):
+    def __init__(self, code, address, server=None):
+        if server is None:
+            server = Server()
+
         super().__init__(code, address, server)
 
         # inserisce l'istanza corrente
@@ -277,7 +280,7 @@ class Bike(_SuperBike):
     client --> instanza dell'antenna client
     """
 
-    def __init__(self, code, address, sensors, client=None):
+    def __init__(self, code, address, client=None, sensors=None):
         if client is None:
             client = Client()
 
@@ -302,6 +305,10 @@ class Bike(_SuperBike):
     @property
     def packets(self):
         return self._memoize
+
+    @property
+    def sensors(self):
+        return self._sensors
 
     # DIREZIONE: bici -> server
 
@@ -335,7 +342,7 @@ class Bike(_SuperBike):
         settings.update(s)
         self.send(settings)
 
-    # TODO: Inserire gli altri pacchetti
+    # TODO: Aggiungere pacchetto NOTICE
 
     # DIREZIONE: server --> bici
 
