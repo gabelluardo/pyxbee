@@ -1,11 +1,13 @@
 import logging
 
+from abc import abstractmethod
+
 from digi.xbee.devices import RemoteXBeeDevice, XBeeDevice
 from digi.xbee.exception import (InvalidOperatingModeException,
                                  InvalidPacketException, TimeoutException)
 from digi.xbee.models.address import XBee64BitAddress
 from serial.serialutil import SerialException
-from abc import abstractmethod
+from ordered_set import OrderedSet
 
 from .packet import Packet
 from .exception import (InvalidInstanceException, PacketInstanceException, InvalidCodeException)
@@ -237,7 +239,7 @@ class Taurus(_SuperBike):
         # colleziona i pacchetti mandati al frontend
         # per visualizzarli al reload della pagina con
         # soluzione di continuita'
-        self._history = list()
+        self._history = OrderedSet()
 
         # memorizza un pacchetto
         # ricevuto per ogni tipo
@@ -248,13 +250,15 @@ class Taurus(_SuperBike):
 
     @property
     def history(self):
-        return self._history
+        return list(self._history)
 
     @property
     def data(self):
         data = self._memoize.get(Packet.Type.DATA)
-        jdata = data.jsonify if data is not None else {}
-        self._history.append(jdata)
+        jdata = {}
+        if data is not None:
+            jdata = data.jsonify
+            self._history.append(jdata)
         return jdata
 
     @property
@@ -272,6 +276,8 @@ class Taurus(_SuperBike):
     # DIREZIONE: bici --> server
 
     def receive(self, packet):
+        if not isinstance(packet, Packet):
+            raise PacketInstanceException
         self._memoize.update({packet.tipo: packet})
 
 
@@ -294,8 +300,6 @@ class Server(_Transmitter):
             raise InvalidInstanceException
 
         if l.code in self.listener.keys():
-            print(l.code)
-            print(self.listener.keys())
             raise InvalidCodeException
 
         self._listener.update({l.code: l})

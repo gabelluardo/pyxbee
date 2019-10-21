@@ -25,6 +25,6 @@ setuptools.setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     python_requires='>=3.6',
-    install_requires=['digi-xbee'],
+    install_requires=['digi-xbee', 'ordered-set'],
     extras_require={'dev': ['pytest>=5', 'pylint', 'autopep8']},
 )
