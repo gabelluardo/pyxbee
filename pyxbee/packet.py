@@ -92,7 +92,9 @@ class Packet:
         VIDEO = '7'
 
     # @TODO: Passare ai dizionari
-    def __init__(self, content=tuple()):
+    def __init__(self, content=None):
+        if content is None:
+            content = tuple()
         self._content = self._decode(content)
 
     def __len__(self):

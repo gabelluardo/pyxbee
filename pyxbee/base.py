@@ -139,84 +139,41 @@ class _SuperBike:
         self.transmitter.send(self.address, packet)
 
 
-class Bike(_SuperBike):
-    """
-    Questa classe prende instaza dell'antenna in
-    modalita' CLIENT, conserva i pacchetti
-    ricevuti in __memoize e si occupa
-    dell'invio di pacchetti verso il SERVER (marta)
+class Server(_Transmitter):
+    """SERVER mode del transmitter"""
 
-    code --> codice con cui viene identif. nei pacchetti
-    address --> indirizzo dell'antenna server
-    client --> instanza dell'antenna client
-    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._listener = dict()
 
-    def __init__(self, code, address, sensors, client):
-        super().__init__(code, address, client)
-
-        # memorizza le instanze dei valori utili
-        self._sensors = sensors
-
-        # inserisce l'instanza corrente
-        # come client dell'antenna
-        self.transmitter.bike = self
-
-        # memorizza tutti i pacchetti ricevuti
-        self._memoize = OrderedSet()
-
-    def __len__(self):
-        return len(self._memoize)
-
-    def __str__(self):
-        return f'{self.code} -- {self.transmitter.address}'
+        self.web = None
 
     @property
-    def packets(self):
-        return self._memoize
+    def listener(self):
+        return self._listener
 
-    # DIREZIONE: bici -> server
+    @listener.setter
+    def listener(self, l):
+        if not isinstance(l, Taurus):
+            raise InvalidInstanceException
 
-    def blind_send(self, packet):
+        if l.code in self.listener.keys():
+            raise InvalidCodeException
+
+        self._listener.update({l.code: l})
+
+    # DIREZIONE: bici --> server
+
+    def manage_packet(self, packet):
         if not isinstance(packet, Packet):
             raise PacketInstanceException
-        self.send(packet)
+        dest = self.listener.get(packet.dest)
+        dest.receive(packet)
 
-    def send_data(self, d):
-        if not isinstance(d, dict):
-            raise InvalidInstanceException
-
-        data = {'dest': self.code, 'type': Packet.Type.DATA}
-        data.update(d)
-        self.send(data)
-
-    # NOTE: probabilmente da deprecare
-    def send_state(self, s):
-        if not isinstance(s, dict):
-            raise InvalidInstanceException
-
-        state = {'dest': self.code, 'type': Packet.Type.STATE}
-        state.update(s)
-        self.send(state)
-
-    def send_setting(self, s):
-        if not isinstance(s, dict):
-            raise InvalidInstanceException
-
-        settings = {'dest': self.code, 'type': Packet.Type.SETTING}
-        settings.update(s)
-        self.send(settings)
-
-    # TODO: Inserire gli altri pacchetti
-
-    # DIREZIONE: server --> bici
-
-    def receive(self, packet):
-        if not isinstance(packet, Packet):
-            raise PacketInstanceException
-        self._memoize.append(packet)
+        if self.web is not None and packet.tipo == Packet.Type.DATA:
+            self.web.send_data(packet.encode)
 
 
-# TODO: aggiungere controllo instanze
 class Taurus(_SuperBike):
     """
     Questa classe prende instaza dell'antenna in
@@ -281,41 +238,6 @@ class Taurus(_SuperBike):
         self._memoize.update({packet.tipo: packet})
 
 
-class Server(_Transmitter):
-    """SERVER mode del transmitter"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._listener = dict()
-
-        self.web = None
-
-    @property
-    def listener(self):
-        return self._listener
-
-    @listener.setter
-    def listener(self, l):
-        if not isinstance(l, Taurus):
-            raise InvalidInstanceException
-
-        if l.code in self.listener.keys():
-            raise InvalidCodeException
-
-        self._listener.update({l.code: l})
-
-    # DIREZIONE: bici --> server
-
-    def manage_packet(self, packet):
-        if not isinstance(packet, Packet):
-            raise PacketInstanceException
-        dest = self.listener.get(packet.dest)
-        dest.receive(packet)
-
-        if self.web is not None and packet.tipo == Packet.Type.DATA:
-            self.web.send_data(packet.encode)
-
-
 class Client(_Transmitter):
     """CLIENT mode del transmitter"""
 
@@ -341,3 +263,83 @@ class Client(_Transmitter):
         if not isinstance(packet, Packet):
             raise PacketInstanceException
         self.bike.receive(packet)
+
+
+class Bike(_SuperBike):
+    """
+    Questa classe prende instaza dell'antenna in
+    modalita' CLIENT, conserva i pacchetti
+    ricevuti in __memoize e si occupa
+    dell'invio di pacchetti verso il SERVER (marta)
+
+    code --> codice con cui viene identif. nei pacchetti
+    address --> indirizzo dell'antenna server
+    client --> instanza dell'antenna client
+    """
+
+    def __init__(self, code, address, sensors, client=None):
+        if client is None:
+            client = Client()
+
+        super().__init__(code, address, client)
+
+        # memorizza le instanze dei valori utili
+        self._sensors = sensors
+
+        # inserisce l'instanza corrente
+        # come client dell'antenna
+        self.transmitter.bike = self
+
+        # memorizza tutti i pacchetti ricevuti
+        self._memoize = OrderedSet()
+
+    def __len__(self):
+        return len(self._memoize)
+
+    def __str__(self):
+        return f'{self.code} -- {self.transmitter.address}'
+
+    @property
+    def packets(self):
+        return self._memoize
+
+    # DIREZIONE: bici -> server
+
+    def blind_send(self, packet):
+        if not isinstance(packet, Packet):
+            raise PacketInstanceException
+        self.send(packet)
+
+    def send_data(self, d):
+        if not isinstance(d, dict):
+            raise InvalidInstanceException
+
+        data = {'dest': self.code, 'type': Packet.Type.DATA}
+        data.update(d)
+        self.send(data)
+
+    # NOTE: probabilmente da deprecare
+    def send_state(self, s):
+        if not isinstance(s, dict):
+            raise InvalidInstanceException
+
+        state = {'dest': self.code, 'type': Packet.Type.STATE}
+        state.update(s)
+        self.send(state)
+
+    def send_setting(self, s):
+        if not isinstance(s, dict):
+            raise InvalidInstanceException
+
+        settings = {'dest': self.code, 'type': Packet.Type.SETTING}
+        settings.update(s)
+        self.send(settings)
+
+    # TODO: Inserire gli altri pacchetti
+
+    # DIREZIONE: server --> bici
+
+    def receive(self, packet):
+        if not isinstance(packet, Packet):
+            raise PacketInstanceException
+        self._memoize.append(packet)
