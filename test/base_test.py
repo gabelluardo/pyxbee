@@ -8,6 +8,7 @@ from pyxbee import *
 from pyxbee.exception import *
 
 test_packet = {
+    # DATA
     '0': {
         'dest': 'X',
         'type': '0',
@@ -19,6 +20,7 @@ test_packet = {
         'time': str(random.random()),
         'gear': str(random.random())
     },
+    # STATE
     '1': {
         'dest': 'X',
         'type': '1',
@@ -32,11 +34,13 @@ test_packet = {
         'speed_running': bool(random.randint(0, 1)),
         'calibration': bool(random.randint(0, 1))
     },
+    # NOTICE
     '2': {
         'dest': 'X',
         'type': '2',
         'valore': str(random.randint(0, 7))
     },
+    # SETTINGS
     '3': {
         'dest': 'X',
         'type': '3',
@@ -51,11 +55,13 @@ test_packet = {
         'update': str(random.random()),
         'p13': bool(random.randint(0, 1))
     },
+    # SIGNAL
     '4': {
         'dest': 'X',
         'type': '4',
         'valore': str(random.randint(0, 13))
     },
+    # MESSAGE
     '5': {
         'dest': 'X',
         'type': '5',
@@ -64,11 +70,13 @@ test_packet = {
         'durata': str(random.random()),
         'timeout': str(random.random())
     },
+    # RASPBERRY
     '6': {
         'dest': 'X',
         'type': '6',
         'valore': str(random.randint(0, 1))
     },
+    # VIDEO
     '7': {
         'dest': 'X',
         'type': '7',
@@ -268,11 +276,11 @@ class TestClientNotPlugged:
         client = Client()
         assert client.bike is None
 
-        bike0 = Bike('0', 'server0', ..., client)
+        bike0 = Bike('0', 'server0', client)
         assert client.bike == bike0
 
         with pytest.raises(InvalidInstanceException):
-            Bike('1', 'server1', ..., client)
+            Bike('1', 'server1', client)
 
         with pytest.raises(InvalidInstanceException):
             client.bike = bike0
@@ -285,7 +293,7 @@ class TestClientNotPlugged:
 
     def test_manage_packet(self):
         client = Client()
-        bike = Bike('0', 'bike0', ..., client)
+        bike = Bike('0', 'bike0', client)
 
         with pytest.raises(PacketInstanceException):
             client.manage_packet(dict())
@@ -324,10 +332,80 @@ class TestClient:
 
 
 class TestBike:
-    # @TODO: Aggiungere test classe Bike (antenna collegata)
-    # Questo test deve essere eseguito
-    # con l'antenna collegata
-    pass
+    def setup(self):
+        self.client = Client()
+        self.bike = Bike('X', 'serverX', self.client)
+
+    def test_init(self):
+        c1 = Client()
+        bike0 = Bike('0', 'server0', c1)
+
+        bike1 = Bike('1', 'server0')
+
+        bike2 = Bike('2', 'server2')
+
+        with pytest.raises(InvalidInstanceException):
+            Bike('0', 'server0', self.client)
+
+        with pytest.raises(InvalidInstanceException):
+            Bike('3', 'server3', self.client)
+
+        assert bike0.code == '0'
+        assert bike1.code == '1'
+        assert bike0.address == 'server0'
+        assert bike2.address == 'server2'
+
+        assert self.bike.transmitter is self.client
+        assert self.client.bike is self.bike
+        assert self.bike.sensors is None
+
+    def test_send(self):
+        with pytest.raises(PacketInstanceException):
+            self.bike.blind_send(list())
+
+        with pytest.raises(InvalidInstanceException):
+            self.bike.send_data(list())
+
+        with pytest.raises(InvalidInstanceException):
+            self.bike.send_state(list())
+
+        with pytest.raises(InvalidInstanceException):
+            self.bike.send_setting(list())
+
+    def test_receive(self):
+        list_ = list()
+        with pytest.raises(PacketInstanceException):
+            self.bike.receive(dict())
+
+        with pytest.raises(PacketInstanceException):
+            self.bike.receive(str())
+
+        setting = dict(test_packet[Packet.Type.SETTING])
+        packet = Packet(setting)
+        self.bike.receive(packet)
+        list_.append(packet)
+
+        signal = dict(test_packet[Packet.Type.SIGNAL])
+        packet = Packet(signal)
+        self.bike.receive(packet)
+        list_.append(packet)
+
+        message = dict(test_packet[Packet.Type.MESSAGE])
+        packet = Packet(message)
+        self.bike.receive(packet)
+        list_.append(packet)
+
+        raspberry = dict(test_packet[Packet.Type.RASPBERRY])
+        packet = Packet(raspberry)
+        self.bike.receive(packet)
+        list_.append(packet)
+
+        video = dict(test_packet[Packet.Type.VIDEO])
+        packet = Packet(video)
+        self.bike.receive(packet)
+        list_.append(packet)
+
+        assert list(self.bike.packets) == list_
 
 
 class TestTaurus:
@@ -344,6 +422,13 @@ class TestTaurus:
         assert tau0.address == 'listener0'
         assert tau1.address == 'listener1'
 
+        tau2 = Taurus('2', 'listener2')
+
+        assert tau2.code == '2'
+        assert tau2.address == 'listener2'
+        assert isinstance(tau2.transmitter, Server)
+        assert tau2.transmitter.listener['2'] is tau2
+
         with pytest.raises(InvalidCodeException):
             Taurus('X', 'listenerX', self.server)
 
@@ -351,6 +436,8 @@ class TestTaurus:
         assert tau1 in self.server.listener.values()
 
         assert self.taurus in self.server.listener.values()
+        assert self.taurus.transmitter is self.server
+        assert self.server.listener['X'] is self.taurus
 
     def test_data(self):
         tau0 = Taurus('0', 'listener0', self.server)
@@ -491,7 +578,8 @@ class TestTaurus:
             'led': str(random.random()),
             'calibration_value': str(random.random()),
             'update': str(random.random()),
-            'p13': bool(random.randint(0, 1))})
+            'p13': bool(random.randint(0, 1))
+        })
         self.server.manage_packet(packet1)
 
         assert tau0.setting == packet1.jsonify
