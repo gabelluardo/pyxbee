@@ -5,7 +5,7 @@ from .exception import InvalidTypeException, InvalidFieldsException
 
 log = logging.getLogger(__name__)
 
-PACKETS = {
+_PACKETS = {
     # DATA
     '0': {
         'dest': '',
@@ -84,11 +84,16 @@ PACKETS = {
 }
 
 
-# questa classe crea dei pacchetti
-# contenitori sottoforma di tuple
-# e fornisce metodi per facilitare la
-# comunicazione con il frontend e gli xbee
 class Packet:
+    """
+    Questa classe crea dei pacchetti
+    contenitori sottoforma di tuple
+    e fornisce metodi per facilitare la
+    comunicazione con il frontend e gli xbee
+    """
+
+    PACKETS = dict(_PACKETS)
+
     class Type:
         DATA = '0'
         STATE = '1'
@@ -118,7 +123,7 @@ class Packet:
         # valori da un pacchetto vuoto.
         # ORDINE NON IMPORTANTE
         if isinstance(data, dict):
-            d = dict(PACKETS[str(data['type'])])
+            d = dict(_PACKETS[str(data['type'])])
             d.update(data)
             res = d.values()
         # se viene passato un una lista/tupla/stringa
@@ -142,11 +147,11 @@ class Packet:
             tipo = content[1]
 
         # check valid type
-        if tipo not in PACKETS.keys():
+        if tipo not in _PACKETS.keys():
             raise InvalidTypeException
 
         # check valid len
-        if len(content) != len(PACKETS[tipo].values()):
+        if len(content) != len(_PACKETS[tipo].values()):
             raise InvalidFieldsException
 
     @property
@@ -172,7 +177,7 @@ class Packet:
     @property
     def jsonify(self):
         content = list(self.content[::-1])
-        res = dict(PACKETS[str(self.tipo)])
+        res = dict(_PACKETS[str(self.tipo)])
 
         for key, _ in res.items():
             res[key] = content.pop()
