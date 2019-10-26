@@ -12,7 +12,7 @@ setuptools.setup(
     name='pyxbee',
     version=version,
     author='Gabriele Belluardo',
-    author_email='gabbelo@outlook.it',
+    author_email='gabriele.belluardo@outlook.it',
     description='Communication module for Marta (Policumbent)',
     long_description=long_description,
     long_description_content_type='text/markdown',
