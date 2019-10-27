@@ -92,7 +92,7 @@ class Packet:
     comunicazione con il frontend e gli xbee
     """
 
-    PACKETS = dict(_PACKETS)
+    _PACKETS = dict(_PACKETS)
 
     class Type:
         DATA = '0'
@@ -105,7 +105,7 @@ class Packet:
         VIDEO = '7'
 
     # @TODO: Passare ai dizionari
-    def __init__(self, content=None):
+    def __init__(self, content=None, protocol=None):
         if content is None:
             content = tuple()
         self._content = self._decode(content)
@@ -123,7 +123,7 @@ class Packet:
         # valori da un pacchetto vuoto.
         # ORDINE NON IMPORTANTE
         if isinstance(data, dict):
-            d = dict(_PACKETS[str(data['type'])])
+            d = dict(cls._PACKETS[str(data['type'])])
             d.update(data)
             res = d.values()
         # se viene passato un una lista/tupla/stringa
@@ -147,12 +147,24 @@ class Packet:
             tipo = content[1]
 
         # check valid type
-        if tipo not in _PACKETS.keys():
+        if tipo not in cls._PACKETS.keys():
             raise InvalidTypeException
 
         # check valid len
-        if len(content) != len(_PACKETS[tipo].values()):
+        if len(content) != len(cls._PACKETS[tipo].values()):
             raise InvalidFieldsException
+
+    @classmethod
+    def protocol(cls, protocol=None):
+        """Metodo per inserire un protocollo"""
+        if isinstance(protocol, dict):
+            cls._PACKETS = dict(protocol)
+        elif isinstance(protocol, str):
+            cls._PACKETS = dict(json.loads(protocol))
+        else:
+            cls._PACKETS = dict(_PACKETS)
+
+        return cls._PACKETS
 
     @property
     def content(self):
@@ -177,7 +189,7 @@ class Packet:
     @property
     def jsonify(self):
         content = list(self.content[::-1])
-        res = dict(_PACKETS[str(self.tipo)])
+        res = dict(self._PACKETS[str(self.tipo)])
 
         for key, _ in res.items():
             res[key] = content.pop()

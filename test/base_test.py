@@ -176,6 +176,23 @@ class TestPacket:
         assert p2.value == p3.value
         assert len(p2) == len(p3)
 
+    def test_protocol(self):
+        with open('test/packets.json') as p:
+            protocol = p.read()
+
+        Packet.protocol(protocol)
+        assert Packet._PACKETS == json.loads(protocol)
+
+        protocol = {'primo': {'ciao': '', 'type': 'ciao'}}
+        result = Packet.protocol(protocol)
+
+        assert result == protocol
+        assert Packet._PACKETS == protocol
+
+        # reset protocollo
+        result = Packet.protocol()
+        assert result == Packet._PACKETS
+
 
 class TestServer:
     # Questo test puo' essere eseguito
