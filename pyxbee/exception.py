@@ -3,7 +3,6 @@ class PyxbeeException(Exception):
 
 
 class InvalidTypeException(PyxbeeException):
-
     __DEFAULT_MESSAGE = "Packet type out of range (0-7)"
 
     def __init__(self, _message=__DEFAULT_MESSAGE):
@@ -11,7 +10,6 @@ class InvalidTypeException(PyxbeeException):
 
 
 class InvalidFieldsException(PyxbeeException):
-
     __DEFAULT_MESSAGE = "The packet has few or too mach fields"
 
     def __init__(self, _message=__DEFAULT_MESSAGE):
@@ -19,7 +17,6 @@ class InvalidFieldsException(PyxbeeException):
 
 
 class InvalidInstanceException(PyxbeeException):
-
     __DEFAULT_MESSAGE = ""
 
     def __init__(self, _message=__DEFAULT_MESSAGE):
@@ -27,7 +24,6 @@ class InvalidInstanceException(PyxbeeException):
 
 
 class PacketInstanceException(PyxbeeException):
-
     __DEFAULT_MESSAGE = "This accepts only Packet instances"
 
     def __init__(self, _message=__DEFAULT_MESSAGE):
@@ -35,7 +31,6 @@ class PacketInstanceException(PyxbeeException):
 
 
 class InvalidCodeException(PyxbeeException):
-
     __DEFAULT_MESSAGE = "Code already used in this instance"
 
     def __init__(self, _message=__DEFAULT_MESSAGE):
