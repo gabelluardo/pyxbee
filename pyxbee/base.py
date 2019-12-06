@@ -35,20 +35,20 @@ class _Transmitter:
         self._open_device(port, baud_rate)
 
     def __del__(self):
-        if self.device is not None:
-            if self.device.is_open():
-                self.device.close()
-                log.debug(f'Device ({self.device.get_64bit_addr()}) close')
+        if self._device is not None:
+            if self._device.is_open():
+                self._device.close()
+                log.info(f'Device ({self._device.get_64bit_addr()}) closed')
 
     def _open_device(self, port, baud_rate):
         device = XBeeDevice(port, baud_rate)
         try:
             device.open()
             device.add_data_received_callback(self.receiver)
-            self._device = device
             log.info(f'Device ({device.get_64bit_addr()}) connected\n')
+            self._device = device
         except (InvalidOperatingModeException, SerialException):
-            log.error('Nessuna antenna trovata')
+            log.error('Antenna not found')
 
     @property
     def device(self):
@@ -73,9 +73,9 @@ class _Transmitter:
             self.device.send_data_async(RemoteXBeeDevice(
                 self.device, XBee64BitAddress.from_hex_string(address)), packet.encode)
         except (TimeoutException, InvalidPacketException):
-            log.error(f'Dispositivo ({address}) non trovato\n')
+            log.error(f'({address}) not found\n')
         except AttributeError:
-            log.error('SEND: Antenna non collegata\n')
+            log.error('SEND: Antenna not connected\n')
 
     def send_sync(self, address, packet):
         """Aspetta l'ack, se scatta il
@@ -86,9 +86,9 @@ class _Transmitter:
             self.device.send_data(RemoteXBeeDevice(
                 self.device, XBee64BitAddress.from_hex_string(address)), packet.encode)
         except (TimeoutException, InvalidPacketException):
-            log.error('ACK send_sync non ricevuto\n')
+            log.error('ACK send_sync not received\n')
         except AttributeError:
-            log.error('SEND_SYNC: Antenna non collegata\n')
+            log.error('SEND_SYNC: Antenna not connected\n')
 
     def send_broadcast(self, packet):
         self.device.send_data_broadcast(packet.encode)
