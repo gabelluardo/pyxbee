@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "pyxbee"
+version = "0.5"
+description = "Communication module for Marta (Policumbent)"
+authors = ["Gabriele Bellaurdo <gabriele.belluardo@outlook.it>"]
+license = "LGPL-3.0-or-later"
+readme = "README.md"
+classifiers=[
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+    'Operating System :: POSIX :: Linux',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+digi-xbee = "^1.2.0"
+ordered-set = {git = "https://github.com/gabelluardo/ordered-set"}
+
+[tool.poetry.dev-dependencies]
+pylint = "*"
+autopep8 = "*"
+pytest = "^5"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

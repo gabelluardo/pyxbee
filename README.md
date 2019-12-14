@@ -14,11 +14,11 @@ Fornisce classi di alto livello per interfacciarsi col modulo [digi-xbee](https:
 
     pip install pyxbee
 
-oppure clonando il repository:
+oppure clonando il repository (serve [poetry](https://python-poetry.org/)):
 
     git clone https://github.com/gabelluardo/pyxbee
     cd pyxbee/
-    python3 setup.py install
+    poetry install
 
 ## License
 

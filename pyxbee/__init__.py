@@ -1,3 +1,5 @@
+import re
+
 from .base import Bike, Client, Server, Taurus
 from .packet import Packet
 from .exception import *
@@ -13,4 +15,6 @@ __all__ = [
     'exception'
 ]
 
-__version__ = '0.5'
+with open('pyproject.toml', 'r') as f:
+    __version__ = re.search(r'^version\s*=\s*[\'"]([^\'"]*)[\'"]',
+                            f.read(), re.MULTILINE).group(1)
