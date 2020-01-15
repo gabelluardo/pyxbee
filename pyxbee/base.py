@@ -186,9 +186,9 @@ class Taurus(_SuperBike):
     server --> instanza dell'antenna server
     """
 
-    def __init__(self, code, address, server=None):
+    def __init__(self, code, address, xbee_port=PORT, server=None):
         if server is None:
-            server = Server()
+            server = Server(port=xbee_port)
 
         super().__init__(code, address, server)
 
@@ -215,11 +215,9 @@ class Taurus(_SuperBike):
     @property
     def data(self):
         data = self._memoize.get(Packet.Type.DATA)
-        jdata = {}
         if data is not None:
-            jdata = data.jsonify
-            self._history.append(jdata)
-        return jdata
+            self._history.append(data.jsonify)
+        return data.jsonify if data is not None else {}
 
     @property
     def state(self):
@@ -231,7 +229,10 @@ class Taurus(_SuperBike):
         sett = self._memoize.get(Packet.Type.SETTING)
         return sett.jsonify if sett is not None else {}
 
-    # TODO: Inserire gli altri pacchetti
+    @property
+    def notice(self):
+        notice = self._memoize.get(Packet.Type.NOTICE)
+        return notice.jsonify if notice is not None else {}
 
     # DIREZIONE: bici --> server
 
