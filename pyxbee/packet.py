@@ -5,7 +5,8 @@ from .exception import InvalidTypeException, InvalidFieldsException
 
 log = logging.getLogger(__name__)
 
-_PACKETS = {
+# protocollo standard di MARTA
+_PROTOCOL = {
     # DATA
     '0': {
         'dest': '',
@@ -92,8 +93,9 @@ class Packet:
     comunicazione con il frontend e gli xbee
     """
 
-    _PACKETS = dict(_PACKETS)
+    _PACKETS = dict(_PROTOCOL)
 
+    # tipi pacchetto per il protocollo standard
     class Type:
         DATA = '0'
         STATE = '1'
@@ -118,17 +120,19 @@ class Packet:
 
     @classmethod
     def _decode(cls, data):
+        """Se viene passato un dizionario aggiorna 
+        i valori da un pacchetto corrispondente vuoto;
+        se viene passata una lista/tupla/stringa
+        ne estrae i valori e li salva in tupla.
+        """
         cls._check_data(data)
-        # se viene passato un dizionario aggiorna i
-        # valori da un pacchetto vuoto.
-        # ORDINE NON IMPORTANTE
+
+        # ORDINE VALORI NON IMPORTANTE
         if isinstance(data, dict):
             d = dict(cls._PACKETS[str(data['type'])])
             d.update(data)
             res = d.values()
-        # se viene passato un una lista/tupla/stringa
-        # ne estrae i valori e li salva in tupla.
-        # ORDINE IMPORTANTE
+        # ORDINE VALORI IMPORTANTE
         elif isinstance(data, (list, tuple)):
             res = data
         else:
@@ -162,7 +166,7 @@ class Packet:
         elif isinstance(protocol, str):
             cls._PACKETS = dict(json.loads(protocol))
         else:
-            cls._PACKETS = dict(_PACKETS)
+            cls._PACKETS = dict(_PROTOCOL)
 
         return cls._PACKETS
 
