@@ -222,10 +222,10 @@ class TestServer:
 
     def test_listener(self):
         server = Server()
-        assert server.listener == {}
+        assert server.listener == dict()
 
-        tau0 = Taurus('0', 'listener0', server)
-        tau1 = Taurus('1', 'listener1', server)
+        tau0 = Taurus('0', 'listener0', server=server)
+        tau1 = Taurus('1', 'listener1', server=server)
 
         assert server.listener == {'0': tau0, '1': tau1}
 
@@ -237,7 +237,7 @@ class TestServer:
 
     def test_manage_packet(self):
         server = Server()
-        dest = Taurus('X', 'listenerX', server)
+        dest = Taurus('X', 'listenerX', server=server)
 
         with pytest.raises(PacketInstanceException):
             server.manage_packet(dict())
@@ -414,11 +414,11 @@ class TestBike:
 class TestTaurus:
     def setup(self):
         self.server = Server()
-        self.taurus = Taurus('X', 'listenerX', self.server)
+        self.taurus = Taurus('X', 'listenerX', '/dev/ttyUSB0', self.server)
 
     def test_init(self):
-        tau0 = Taurus('0', 'listener0', self.server)
-        tau1 = Taurus(code='1', address='listener1', server=self.server)
+        tau0 = Taurus('0', 'listener0', server=self.server)
+        tau1 = Taurus(code='1', address='listener1', xbee_port='/dev/ttyUSB0', server=self.server)
 
         assert tau0.code == '0'
         assert tau1.code == '1'
@@ -433,7 +433,7 @@ class TestTaurus:
         assert tau2.transmitter.listener['2'] is tau2
 
         with pytest.raises(InvalidCodeException):
-            Taurus('X', 'listenerX', self.server)
+            Taurus('X', 'listenerX', server=self.server)
 
         assert tau0 in self.server.listener.values()
         assert tau1 in self.server.listener.values()
@@ -443,8 +443,8 @@ class TestTaurus:
         assert self.server.listener['X'] is self.taurus
 
     def test_data(self):
-        tau0 = Taurus('0', 'listener0', self.server)
-        tau1 = Taurus('1', 'listener1', self.server)
+        tau0 = Taurus('0', 'listener0', server=self.server)
+        tau1 = Taurus('1', 'listener1', server=self.server)
 
         assert tau0.data == {}
         assert tau1.data == {}
@@ -502,8 +502,8 @@ class TestTaurus:
         assert tau1.history == [packet2.jsonify, packet3.jsonify]
 
     def test_state(self):
-        tau0 = Taurus('0', 'listener0', self.server)
-        tau1 = Taurus('1', 'listener1', self.server)
+        tau0 = Taurus('0', 'listener0', server=self.server)
+        tau1 = Taurus('1', 'listener1', server=self.server)
 
         assert tau0.state == {}
         assert tau1.state == {}
@@ -563,8 +563,8 @@ class TestTaurus:
         assert tau1.state == packet3.jsonify
 
     def test_setting(self):
-        tau0 = Taurus('0', 'listener0', self.server)
-        tau1 = Taurus('1', 'listener1', self.server)
+        tau0 = Taurus('0', 'listener0', server=self.server)
+        tau1 = Taurus('1', 'listener1', server=self.server)
 
         assert tau0.setting == {}
         assert tau1.setting == {}
