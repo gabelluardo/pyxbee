@@ -1,6 +1,6 @@
 import logging
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from digi.xbee.devices import RemoteXBeeDevice, XBeeDevice
 from digi.xbee.exception import (InvalidOperatingModeException,
@@ -18,7 +18,7 @@ PORT = '/dev/ttyUSB0'
 BAUD_RATE = 115200
 
 
-class _Transmitter:
+class _Transmitter(ABC):
     """
     Questa classe si interfaccia in con
     le funzioni di basso livello
@@ -107,7 +107,7 @@ class _Transmitter:
         pass
 
 
-class _SuperBike:
+class _SuperBike(ABC):
     """Classe genitore per la modalita' server e client"""
 
     def __init__(self, code, address, transmitter):
