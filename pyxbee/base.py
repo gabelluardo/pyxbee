@@ -9,13 +9,11 @@ from digi.xbee.models.address import XBee64BitAddress
 from serial.serialutil import SerialException
 from ordered_set import OrderedSet
 
+from .const import PORT, BAUD_RATE
 from .packet import Packet
 from .exception import (InvalidInstanceException, PacketInstanceException, InvalidCodeException)
 
 log = logging.getLogger(__name__)
-
-PORT = '/dev/ttyUSB0'
-BAUD_RATE = 115200
 
 
 class _Transmitter(ABC):
