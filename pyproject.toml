@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyxbee"
-version = "0.6.0"
+version = "0.7.0"
 description = "Communication module for Marta (Policumbent)"
 authors = ["Gabriele Bellaurdo <gabriele.belluardo@outlook.it>"]
 license = "LGPL-3.0-or-later"
