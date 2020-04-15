@@ -5,7 +5,7 @@ description = "Communication module for Marta (Policumbent)"
 authors = ["Gabriele Bellaurdo <gabriele.belluardo@outlook.it>"]
 license = "LGPL-3.0-or-later"
 readme = "README.md"
-repository="https://github.com/gabelluardo/pyxbee"
+repository="https://github.com/policumbent/pyxbee"
 classifiers=[
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
