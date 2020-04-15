@@ -1,8 +1,7 @@
 # Pyxbee
 
-![Status](https://img.shields.io/badge/status-beta-yellow.svg)
 [![Version](https://img.shields.io/pypi/v/pyxbee)](https://pypi.python.org/pypi/pyxbee/)
-[![License](https://img.shields.io/github/license/gabelluardo/pyxbee?color=blue)](https://github.com/gabelluardo/pyxbee/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/policumbent/pyxbee)](https://github.com/policumbent/pyxbee/blob/master/LICENSE)
 [![Python Version](https://img.shields.io/pypi/pyversions/pyxbee)](https://www.python.org/downloads/)
 
 Modulo di comunicazione per [Marta](https://github.com/gabelluardo/marta)
