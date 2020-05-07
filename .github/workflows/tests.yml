@@ -3,21 +3,7 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  Linting:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
-      - name: Linting
-        run: |
-          pip install pre-commit
-          pre-commit run --all-files
   Tests:
-    needs: Linting
     name: ${{ matrix.os }} / ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}-latest
     strategy:
