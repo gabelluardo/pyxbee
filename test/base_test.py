@@ -193,6 +193,23 @@ class TestPacket:
         result = Packet.protocol()
         assert result == Packet._PACKETS
 
+    def test_digest(self):
+        Packet.secret_key = b"test_key"
+
+        for tipo in test_packet.keys():
+            tester = dict(test_packet[tipo])
+
+            p1 = Packet(tester)
+            p2 = Packet(tester)
+
+            assert p1.secret_key == p2.secret_key
+
+            assert p1.content == p2.content
+            assert p1.value == p2.value
+            assert p1.encode == p2.encode
+            assert p1.jsonify == p2.jsonify
+            assert p1.dictify == p2.dictify
+
 
 class TestServer:
     # Questo test puo' essere eseguito
