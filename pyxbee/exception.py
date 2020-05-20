@@ -35,3 +35,10 @@ class InvalidCodeException(PyxbeeException):
 
     def __init__(self, _message=__DEFAULT_MESSAGE):
         PyxbeeException.__init__(self, _message)
+
+
+class InvalidDigest(PyxbeeException):
+    __DEFAULT_MESSAGE = "Key digest doesn't match, this packet may be corrupted"
+
+    def __init__(self, _message=__DEFAULT_MESSAGE):
+        PyxbeeException.__init__(self, _message)

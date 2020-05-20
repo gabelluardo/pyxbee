@@ -2,9 +2,10 @@ import json
 import logging
 
 from abc import ABC
+from hashlib import blake2b
 
 from .const import PROTOCOL
-from .exception import InvalidTypeException, InvalidFieldsException
+from .exception import InvalidTypeException, InvalidFieldsException, InvalidInstanceException
 
 log = logging.getLogger(__name__)
 
@@ -12,6 +13,9 @@ log = logging.getLogger(__name__)
 class _ABCPacket(ABC):
 
     _PACKETS = dict(PROTOCOL)
+
+    # chiave per il digest
+    _SECRET_KEY = None
 
     # tipi pacchetto per il protocollo standard
     class Type:
@@ -37,6 +41,25 @@ class _ABCPacket(ABC):
     def content_dict(self):
         return self._content
 
+    @property
+    def protected_type(self):
+        return (Packet.Type.SETTING,
+                Packet.Type.SIGNAL,
+                Packet.Type.MESSAGE,
+                Packet.Type.RASPBERRY,
+                Packet.Type.VIDEO)
+
+    @property
+    def secret_key(self):
+        return self._SECRET_KEY
+
+    @secret_key.setter
+    def secret_key(self, key):
+        if not isinstance(key, str):
+            raise InvalidInstanceException
+
+        self._SECRET_KEY = key
+
     @classmethod
     def protocol(cls, protocol=None):
         """Metodo per inserire un protocollo custom"""
@@ -57,13 +80,16 @@ class _ABCPacket(ABC):
         """
         self._check_data(data)
 
-        # ORDINE VALORI NON IMPORTANTE
         if isinstance(data, dict):
+            # ORDINE VALORI NON IMPORTANTE
             dic = dict(self._PACKETS[str(data['type'])])
             dic.update(data)
-        # ORDINE VALORI IMPORTANTE
         else:
+            # ORDINE VALORI IMPORTANTE
             dic = self._dictify(data)
+
+        if dic['type'] in self.protected_type and self.secret_key:
+            self._add_digest(dic)
 
         return dict(dic)
 
@@ -95,6 +121,11 @@ class _ABCPacket(ABC):
 
         return res
 
+    def _add_digest(self, dic):
+        h = blake2b(key=self.secret_key, digest_size=16)
+        h.update(json.dumps(dic).encode('utf-8'))
+        dic.update({'digest': h.hexdigest()})
+
     def __len__(self):
         return len(self._content)
 
@@ -105,7 +136,7 @@ class _ABCPacket(ABC):
 class Packet(_ABCPacket):
     """
     Questa classe crea dei pacchetti
-    contenitori sottoforma di tuple
+    contenitori sottoforma di dizionari o tuple
     e fornisce metodi per facilitare la
     comunicazione con il frontend e gli xbee
     """
