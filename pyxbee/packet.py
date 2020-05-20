@@ -26,11 +26,15 @@ class _ABCPacket(ABC):
 
     def __init__(self, content=None):
         if content is None:
-            content = tuple()
+            content = dict()
         self._content = self._decode(content)
 
     @property
     def content(self):
+        return tuple(self._content.values())
+
+    @property
+    def content_dict(self):
         return self._content
 
     @classmethod
@@ -49,23 +53,19 @@ class _ABCPacket(ABC):
         """Se viene passato un dizionario aggiorna
         i valori da un pacchetto corrispondente vuoto;
         se viene passata una lista/tupla/stringa
-        ne estrae i valori e li salva in tupla.
+        ne estrae i valori e li converte in dizionario.
         """
         self._check_data(data)
 
         # ORDINE VALORI NON IMPORTANTE
         if isinstance(data, dict):
-            d = dict(self._PACKETS[str(data['type'])])
-            d.update(data)
-            res = d.values()
+            dic = dict(self._PACKETS[str(data['type'])])
+            dic.update(data)
         # ORDINE VALORI IMPORTANTE
-        elif isinstance(data, (list, tuple)):
-            res = data
         else:
-            res = [json.loads(item.lower()) if item.lower() in ['true', 'false']
-                   else item for item in data.split(';')]
+            dic = self._dictify(data)
 
-        return tuple(res)
+        return dict(dic)
 
     def _check_data(self, data):
         if isinstance(data, dict):
@@ -82,6 +82,18 @@ class _ABCPacket(ABC):
         # check valid len
         if len(content) != len(self._PACKETS[tipo].values()):
             raise InvalidFieldsException
+
+    def _dictify(self, data):
+        if isinstance(data, str):
+            data = [json.loads(item.lower()) if item.lower() in ('true', 'false')
+                    else item for item in data.split(';')]
+
+        content = list(data[::-1])
+        res = dict(self._PACKETS[str(data[1])])
+        for key, _ in res.items():
+            res[key] = content.pop()
+
+        return res
 
     def __len__(self):
         return len(self._content)
@@ -119,13 +131,8 @@ class Packet(_ABCPacket):
 
     @property
     def jsonify(self):
-        content = list(self.content[::-1])
-        res = dict(self._PACKETS[str(self.tipo)])
-
-        for key, _ in res.items():
-            res[key] = content.pop()
-        return json.dumps(res)
+        return json.dumps(self.content_dict)
 
     @property
     def dictify(self):
-        return json.loads(self.jsonify)
+        return self.content_dict

@@ -101,7 +101,7 @@ class TestPacket:
             assert p1.dictify == tester
             assert p1.content == tester_tuple
             assert len(p1) == len(tester)
-            assert str(p1) == str(tuple(tester.values()))
+            assert str(p1) == str(tester)
 
             # per la comparazione di due packetti uguali
             p2 = Packet(tester)
