@@ -172,7 +172,7 @@ class Packet(_ABCPacket):
 
     @property
     def raw_data(self):
-        if 'digest' in self.content_dict:
+        if 'digest' in self.content_dict.keys():
             data = dict(self.content_dict)
             data.pop('digest')
         else:
