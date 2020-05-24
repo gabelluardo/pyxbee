@@ -4,6 +4,8 @@ import pytest
 import json
 import random
 
+from hashlib import blake2b
+
 from pyxbee import *
 from pyxbee.exception import *
 
@@ -195,8 +197,9 @@ class TestPacket:
 
     def test_digest(self):
         Packet.secret_key = b"test_key"
+        protected_type = Packet().protected_type
 
-        for tipo in test_packet.keys():
+        for tipo in protected_type:
             tester = dict(test_packet[tipo])
 
             p1 = Packet(tester)
@@ -209,6 +212,44 @@ class TestPacket:
             assert p1.encode == p2.encode
             assert p1.jsonify == p2.jsonify
             assert p1.dictify == p2.dictify
+            assert p1.digest == p2.digest
+
+        for tipo in protected_type:
+            tester = dict(test_packet[tipo])
+
+            Packet.secret_key = b"test_key"
+            p1 = Packet(tester)
+
+            assert p1.secret_key == b"test_key"
+
+            Packet.secret_key = b"test_key2"
+            p2 = Packet(tester)
+
+            assert p2.secret_key == b"test_key2"
+
+            # aggiornando la secret_key si aggiorna per tutti
+            assert p1.secret_key == p2.secret_key
+
+            assert p1.content != p2.content
+            assert p1.value != p2.value
+            assert p1.encode != p2.encode
+            assert p1.jsonify != p2.jsonify
+            assert p1.dictify != p2.dictify
+            assert p1.digest != p2.digest
+
+    def test_hashing(self):
+        Packet.secret_key = b"test_key"
+        protected_type = Packet().protected_type
+
+        for tipo in protected_type:
+            tester = dict(test_packet[tipo])
+
+            p = Packet(tester)
+
+            h = blake2b(key=Packet.secret_key, digest_size=16)
+            h.update(json.dumps(p.raw_data).encode('utf-8'))
+
+            assert p.digest == h.hexdigest()
 
 
 class TestServer:
