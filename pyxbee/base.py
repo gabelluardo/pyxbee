@@ -11,7 +11,8 @@ from ordered_set import OrderedSet
 
 from .const import PORT, BAUD_RATE
 from .packet import Packet
-from .exception import (InvalidInstanceException, PacketInstanceException, InvalidCodeException)
+from .exception import (InvalidInstanceException, PacketInstanceException,
+                        InvalidCodeException, InvalidDigest)
 
 log = logging.getLogger(__name__)
 
@@ -98,7 +99,17 @@ class _Transmitter(ABC):
             raw = xbee_message.data.decode()
             packet = Packet(raw)
             log.debug(f'Received packet: {packet}')
-            self.manage_packet(packet)
+
+            if packet.tipo in packet.protected_type:
+                dig = packet.calculate_digest(packet.raw_data)
+
+                if dig == packet.digest:
+                    self.manage_packet(packet)
+                # TODO: vogliamo che venga laciata un'eccezione?
+                # else:
+                #     raise InvalidDigest
+            else:
+                self.manage_packet(packet)
 
     @abstractmethod
     def manage_packet(self, packet):
@@ -184,9 +195,12 @@ class Taurus(_SuperBike):
     server --> instanza dell'antenna server
     """
 
-    def __init__(self, code, address, xbee_port=PORT, server=None):
-        if server is None:
+    def __init__(self, code, address, xbee_port=PORT, server=None, secret_key=None):
+        if not server:
             server = Server(port=xbee_port)
+
+        if secret_key:
+            Packet.secret_key = secret_key
 
         super().__init__(code, address, server)
 
@@ -279,9 +293,12 @@ class Bike(_SuperBike):
     client --> instanza dell'antenna client
     """
 
-    def __init__(self, code, address, client=None, sensors=None):
-        if client is None:
+    def __init__(self, code, address, client=None, sensors=None, secret_key=None):
+        if not client:
             client = Client()
+
+        if secret_key:
+            Packet.secret_key = secret_key
 
         super().__init__(code, address, client)
 

@@ -468,6 +468,15 @@ class TestBike:
 
         assert list(self.bike.packets) == list_
 
+    def test_secret_key(self):
+        key = b"test"
+
+        c = Client()
+        _ = Bike('Y', 'serverY', c, secret_key=key)
+        p = Packet()
+
+        assert p.secret_key == key
+
 
 class TestTaurus:
     def setup(self):
@@ -705,3 +714,11 @@ class TestTaurus:
         packet = Packet(setting)
         self.taurus.receive(packet)
         assert self.taurus.setting == packet.jsonify
+
+    def test_secret_key(self):
+        key = b"test"
+
+        _ = Taurus('X', 'listenerX', '/dev/ttyUSB0', secret_key=key)
+        p = Packet()
+
+        assert p.secret_key == key

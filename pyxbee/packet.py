@@ -73,6 +73,13 @@ class _ABCPacket(ABC):
 
         return cls._PACKETS
 
+    @classmethod
+    def calculate_digest(cls, data):
+        h = blake2b(key=cls.secret_key, digest_size=16)
+        h.update(json.dumps(data).encode('utf-8'))
+
+        return h.hexdigest()
+
     def _decode(self, data):
         """Se viene passato un dizionario aggiorna
         i valori da un pacchetto corrispondente vuoto;
@@ -123,9 +130,7 @@ class _ABCPacket(ABC):
         return res
 
     def _add_digest(self, dic):
-        h = blake2b(key=self.secret_key, digest_size=16)
-        h.update(json.dumps(dic).encode('utf-8'))
-        dic.update({'digest': h.hexdigest()})
+        dic.update({'digest': self.calculate_digest(dic)})
 
     def __len__(self):
         return len(self._content)
