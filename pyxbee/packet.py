@@ -30,8 +30,9 @@ class _ABCPacket(ABC):
 
     def __init__(self, content=None):
         if content is None:
-            content = dict()
-        self._content = self._decode(content)
+            self._content = dict()
+        else:
+            self._content = self._decode(content)
 
     @property
     def content(self):
@@ -146,11 +147,11 @@ class Packet(_ABCPacket):
 
     @property
     def dest(self):
-        return self.content[0] if len(self) > 0 else None
+        return self.content_dict['dest'] if len(self) > 0 else None
 
     @property
     def tipo(self):
-        return self.content[1] if len(self) > 0 else None
+        return self.content_dict['type'] if len(self) > 0 else None
 
     @property
     def value(self):
@@ -159,6 +160,19 @@ class Packet(_ABCPacket):
     @property
     def encode(self):
         return ';'.join(map(str, self.content))
+
+    @property
+    def digest(self):
+        return self.content_dict['digest'] if self.tipo in self.protected_type else None
+
+    @property
+    def raw_data(self):
+        if 'digest' in self.content_dict:
+            data = dict(self.content_dict)
+            data.pop('digest')
+        else:
+            data = self.content_dict
+        return data
 
     @property
     def jsonify(self):
