@@ -34,7 +34,7 @@ class _Transmitter(ABC):
         self._open_device(port, baud_rate)
 
     def __del__(self):
-        if self._device is not None:
+        if self._device:
             if self._device.is_open():
                 self._device.close()
                 log.info(f'Device ({self._device.get_64bit_addr()}) closed')
@@ -55,7 +55,7 @@ class _Transmitter(ABC):
 
     @property
     def address(self):
-        return self.device.get_64bit_addr() if self.device is not None else 'None'
+        return self.device.get_64bit_addr() if self.device else 'None'
 
     @property
     def port(self):
@@ -179,7 +179,7 @@ class Server(_Transmitter):
         dest = self.listener.get(packet.dest)
         dest.receive(packet)
 
-        if self.web is not None and packet.tipo == Packet.Type.DATA:
+        if self.web and packet.tipo == Packet.Type.DATA:
             self.web.send_data(packet.encode)
 
 
@@ -227,24 +227,24 @@ class Taurus(_SuperBike):
     @property
     def data(self):
         data = self._memoize.get(Packet.Type.DATA)
-        if data is not None:
+        if data:
             self._history.append(data.jsonify)
-        return data.jsonify if data is not None else {}
+        return data.jsonify if data else {}
 
     @property
     def state(self):
         state = self._memoize.get(Packet.Type.STATE)
-        return state.jsonify if state is not None else {}
+        return state.jsonify if state else {}
 
     @property
     def setting(self):
         sett = self._memoize.get(Packet.Type.SETTING)
-        return sett.jsonify if sett is not None else {}
+        return sett.jsonify if sett else {}
 
     @property
     def notice(self):
         notice = self._memoize.get(Packet.Type.NOTICE)
-        return notice.jsonify if notice is not None else {}
+        return notice.jsonify if notice else {}
 
     # DIREZIONE: bici --> server
 
