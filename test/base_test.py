@@ -4,7 +4,7 @@ import pytest
 import json
 import random
 
-from hashlib import blake2b
+from hashlib import blake2s
 
 from pyxbee import *
 from pyxbee.exception import *
@@ -246,7 +246,7 @@ class TestPacket:
 
             p = Packet(tester)
 
-            h = blake2b(key=Packet.secret_key, digest_size=16)
+            h = blake2s(key=Packet.secret_key, digest_size=16)
             h.update(json.dumps(p.raw_data).encode('utf-8'))
 
             assert p.digest == h.hexdigest()

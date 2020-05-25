@@ -2,7 +2,7 @@ import json
 import logging
 
 from abc import ABC
-from hashlib import blake2b
+from hashlib import blake2s
 
 from .const import PROTOCOL
 from .exception import InvalidTypeException, InvalidFieldsException, InvalidInstanceException
@@ -75,7 +75,7 @@ class _ABCPacket(ABC):
 
     @classmethod
     def calculate_digest(cls, data):
-        h = blake2b(key=cls.secret_key, digest_size=16)
+        h = blake2s(key=cls.secret_key, digest_size=16)
         h.update(json.dumps(data).encode('utf-8'))
 
         return h.hexdigest()
