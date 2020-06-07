@@ -126,11 +126,11 @@ version = "8.2.0"
 
 [[package]]
 category = "main"
-description = "A MutableSet that remembers its order, so that every entry has an index."
+description = "A set that remembers its order, and allows looking up its items by their index in that order."
 name = "ordered-set"
 optional = false
-python-versions = ">=2.7"
-version = "3.1.1"
+python-versions = ">=3.5"
+version = "4.0.1"
 
 [[package]]
 category = "dev"
@@ -290,7 +290,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "a15158627ad50bd2a2d2a9487e4fc7f7644a45191c70915483a4217922b1ea41"
+content-hash = "fe1ee73ac2bf267e6cd19c29f707b64b44bf0a257d09f4e68cf58ab27db66f2a"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -356,7 +356,7 @@ more-itertools = [
     {file = "more_itertools-8.2.0-py3-none-any.whl", hash = "sha256:5dd8bcf33e5f9513ffa06d5ad33d78f31e1931ac9a18f33d37e77a180d393a7c"},
 ]
 ordered-set = [
-    {file = "ordered-set-3.1.1.tar.gz", hash = "sha256:a7bfa858748c73b096e43db14eb23e2bc714a503f990c89fac8fab9b0ee79724"},
+    {file = "ordered-set-4.0.1.tar.gz", hash = "sha256:a31008c57f9c9776b12eb8841b1f61d1e4d70dfbbe8875ccfa2403c54af3d51b"},
 ]
 packaging = [
     {file = "packaging-20.3-py2.py3-none-any.whl", hash = "sha256:82f77b9bee21c1bafbf35a84905d604d5d1223801d639cf3ed140bd651c08752"},
