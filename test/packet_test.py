@@ -127,8 +127,8 @@ class TestPacket:
         for tipo in protected_type:
             tester = dict(test_packet[tipo])
 
-            p1 = Packet(tester)
-            p2 = Packet(tester)
+            p1 = Packet(tester, nonce=False)
+            p2 = Packet(tester, nonce=False)
 
             assert p1.secret_key == p2.secret_key
 
@@ -137,7 +137,21 @@ class TestPacket:
             assert p1.encode == p2.encode
             assert p1.jsonify == p2.jsonify
             assert p1.dictify == p2.dictify
-            assert p1.digest == p2.digest
+
+        for tipo in protected_type:
+            tester = dict(test_packet[tipo])
+
+            p1 = Packet(tester)
+            p2 = Packet(tester)
+
+            assert p1.secret_key == p2.secret_key
+
+            assert p1.nonce < p2.nonce
+            assert p1.content != p2.content
+            assert p1.value != p2.value
+            assert p1.encode != p2.encode
+            assert p1.jsonify != p2.jsonify
+            assert p1.dictify != p2.dictify
 
         for tipo in protected_type:
             tester = dict(test_packet[tipo])
@@ -169,9 +183,18 @@ class TestPacket:
         for tipo in protected_type:
             tester = dict(test_packet[tipo])
 
-            p = Packet(tester)
+            p1 = Packet(tester)
+            h1 = blake2s(key=Packet.secret_key, digest_size=16)
+            h1.update(json.dumps(p1.raw_data).encode('utf-8'))
 
-            h = blake2s(key=Packet.secret_key, digest_size=16)
-            h.update(json.dumps(p.raw_data).encode('utf-8'))
+            p2 = Packet(tester, nonce=False)
+            h2 = blake2s(key=Packet.secret_key, digest_size=16)
+            h2.update(json.dumps(p2.raw_data).encode('utf-8'))
 
-            assert p.digest == h.hexdigest()
+            assert p1.digest == h1.hexdigest()
+            assert p1.digest != h2.hexdigest()
+
+            assert p2.digest != h1.hexdigest()
+            assert p2.digest == h2.hexdigest()
+
+            assert p1.digest != p2.digest

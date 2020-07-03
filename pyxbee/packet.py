@@ -9,6 +9,8 @@ from .exception import InvalidTypeException, InvalidFieldsException, InvalidInst
 
 log = logging.getLogger(__name__)
 
+NOUCE_COUNTER = 0
+
 
 class _ABCPacket(ABC):
 
@@ -28,7 +30,9 @@ class _ABCPacket(ABC):
         RASPBERRY = '6'
         VIDEO = '7'
 
-    def __init__(self, content=None):
+    def __init__(self, content=None, nonce=True):
+        self._nonce = nonce
+
         if content is None:
             self._content = dict()
         else:
@@ -130,7 +134,14 @@ class _ABCPacket(ABC):
         return res
 
     def _add_digest(self, dic):
+        if self._nonce:
+            dic.update({'nonce': self._add_nonce()})
         dic.update({'digest': self.calculate_digest(dic)})
+
+    def _add_nonce(self):
+        global NOUCE_COUNTER
+        NOUCE_COUNTER += 1
+        return NOUCE_COUNTER
 
     def __len__(self):
         return len(self._content)
@@ -171,7 +182,13 @@ class Packet(_ABCPacket):
         return self.content_dict['digest'] if self.tipo in self.protected_type else None
 
     @property
+    def nonce(self):
+        return self.content_dict['nonce'] if self.tipo in self.protected_type else None
+
+    @property
     def raw_data(self):
+        """Usata per il calcolo del digest"""
+
         if 'digest' in self.content_dict.keys():
             data = dict(self.content_dict)
             data.pop('digest')

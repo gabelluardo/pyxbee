@@ -27,7 +27,9 @@ class _Transmitter(ABC):
     """
 
     def __init__(self, port=PORT, baud_rate=BAUD_RATE):
+        self._nonce = -1
         self._device = None
+
         self._port = port
         self._baud_rate = baud_rate
 
@@ -102,8 +104,10 @@ class _Transmitter(ABC):
 
             if packet.tipo in packet.protected_type:
                 dig = packet.calculate_digest(packet.raw_data)
+                nonce = int(packet.nonce)
 
-                if dig == packet.digest:
+                if dig == packet.digest and nonce > self._nonce:
+                    self._nonce = nonce
                     self.manage_packet(packet)
                 # TODO: vogliamo che venga laciata un'eccezione?
                 # else:
