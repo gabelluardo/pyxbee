@@ -19,11 +19,19 @@ log = logging.getLogger(__name__)
 
 class _Transmitter(ABC):
     """
-    Questa classe si interfaccia in con
-    le funzioni di basso livello
+    Si interfaccia con la libreria
     dello xbee e si occupa i mandare
     e ricevere raw_message formati da
-    stringhe del tipo {};{};{};{}
+    stringhe del tipo `{};{};{};{}`
+
+    I parametri dell'antenna xbee sono settati
+    manualmente via software esterno  
+    :param port: `str`
+        Porta scelta per lo xbee
+        DEFAULT: '/dev/ttyUSB0'
+    :param baud_rate: `int`
+        Baud rate scelto per lo xbee
+        DEFAULT: `115200`
     """
 
     def __init__(self, port=PORT, baud_rate=BAUD_RATE):

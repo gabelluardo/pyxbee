@@ -13,6 +13,21 @@ NOUCE_COUNTER = 0
 
 
 class _ABCPacket(ABC):
+    """
+    Classe genitore per operazioni di basso livello
+    sui pacchetti
+
+    :param content: `tuple` or `dict` or `str`
+        Contenuto del pacchetto che viene opportunamente
+        filtrato e e trasformato in dizionario.
+        DEFAULT: `None`
+    :param nonce: `bool`
+        Abilita o disabilita l'aggiunta di un nonce nei
+        pacchetti firmati con digest. 
+        Utile settarlo a `False` solo nei test, per provare
+        la corretta generazione del digest
+        DEFAULT: `True`
+    """
 
     _PACKETS = dict(PROTOCOL)
 
@@ -67,7 +82,14 @@ class _ABCPacket(ABC):
 
     @classmethod
     def protocol(cls, protocol=None):
-        """Metodo per inserire un protocollo custom"""
+        """Permette l'inserimento di un protocollo
+        custom, se non viene passato un nuovo 
+        protocollo, ripristina quello di default.
+        Ritorna il nuovo protocollo
+
+        :param protocol: `dict` or `str`
+            DEFAULT: `None`
+        """
         if isinstance(protocol, dict):
             cls._PACKETS = dict(protocol)
         elif isinstance(protocol, str):
@@ -135,10 +157,11 @@ class _ABCPacket(ABC):
 
     def _add_digest(self, dic):
         if self._nonce:
-            dic.update({'nonce': self._add_nonce()})
+            dic.update({'nonce': self._inc_nonce()})
         dic.update({'digest': self.calculate_digest(dic)})
 
-    def _add_nonce(self):
+    @staticmethod
+    def _inc_nonce():
         global NOUCE_COUNTER
         NOUCE_COUNTER += 1
         return NOUCE_COUNTER
@@ -179,11 +202,11 @@ class Packet(_ABCPacket):
 
     @property
     def digest(self):
-        return self.content_dict['digest'] if self.tipo in self.protected_type else None
+        return self.content_dict.get('digest')
 
     @property
     def nonce(self):
-        return self.content_dict['nonce'] if self.tipo in self.protected_type else None
+        return self.content_dict.get('nonce')
 
     @property
     def raw_data(self):
