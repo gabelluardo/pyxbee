@@ -11,29 +11,40 @@ from ordered_set import OrderedSet
 
 from .const import PORT, BAUD_RATE
 from .packet import Packet
-from .exception import (InvalidInstanceException, PacketInstanceException, InvalidCodeException)
+from .exception import (InvalidInstanceException, PacketInstanceException,
+                        InvalidCodeException, InvalidDigest)
 
 log = logging.getLogger(__name__)
 
 
 class _Transmitter(ABC):
     """
-    Questa classe si interfaccia in con
-    le funzioni di basso livello
+    Si interfaccia con la libreria
     dello xbee e si occupa i mandare
     e ricevere raw_message formati da
-    stringhe del tipo {};{};{};{}
+    stringhe del tipo `{};{};{};{}`
+
+    I parametri dell'antenna xbee sono settati
+    manualmente via software esterno  
+    :param port: `str`
+        Porta scelta per lo xbee
+        DEFAULT: '/dev/ttyUSB0'
+    :param baud_rate: `int`
+        Baud rate scelto per lo xbee
+        DEFAULT: `115200`
     """
 
     def __init__(self, port=PORT, baud_rate=BAUD_RATE):
+        self._nonce = -1
         self._device = None
+
         self._port = port
         self._baud_rate = baud_rate
 
         self._open_device(port, baud_rate)
 
     def __del__(self):
-        if self._device is not None:
+        if self._device:
             if self._device.is_open():
                 self._device.close()
                 log.info(f'Device ({self._device.get_64bit_addr()}) closed')
@@ -54,7 +65,7 @@ class _Transmitter(ABC):
 
     @property
     def address(self):
-        return self.device.get_64bit_addr() if self.device is not None else 'None'
+        return self.device.get_64bit_addr() if self.device else 'None'
 
     @property
     def port(self):
@@ -98,7 +109,19 @@ class _Transmitter(ABC):
             raw = xbee_message.data.decode()
             packet = Packet(raw)
             log.debug(f'Received packet: {packet}')
-            self.manage_packet(packet)
+
+            if packet.tipo in packet.protected_type:
+                dig = packet.calculate_digest(packet.raw_data)
+                nonce = int(packet.nonce)
+
+                if dig == packet.digest and nonce > self._nonce:
+                    self._nonce = nonce
+                    self.manage_packet(packet)
+                # TODO: vogliamo che venga laciata un'eccezione?
+                # else:
+                #     raise InvalidDigest
+            else:
+                self.manage_packet(packet)
 
     @abstractmethod
     def manage_packet(self, packet):
@@ -168,7 +191,7 @@ class Server(_Transmitter):
         dest = self.listener.get(packet.dest)
         dest.receive(packet)
 
-        if self.web is not None and packet.tipo == Packet.Type.DATA:
+        if self.web and packet.tipo == Packet.Type.DATA:
             self.web.send_data(packet.encode)
 
 
@@ -184,9 +207,12 @@ class Taurus(_SuperBike):
     server --> instanza dell'antenna server
     """
 
-    def __init__(self, code, address, xbee_port=PORT, server=None):
-        if server is None:
+    def __init__(self, code, address, xbee_port=PORT, server=None, secret_key=None):
+        if not server:
             server = Server(port=xbee_port)
+
+        if secret_key:
+            Packet.secret_key = secret_key
 
         super().__init__(code, address, server)
 
@@ -213,24 +239,24 @@ class Taurus(_SuperBike):
     @property
     def data(self):
         data = self._memoize.get(Packet.Type.DATA)
-        if data is not None:
+        if data:
             self._history.append(data.jsonify)
-        return data.jsonify if data is not None else {}
+        return data.jsonify if data else {}
 
     @property
     def state(self):
         state = self._memoize.get(Packet.Type.STATE)
-        return state.jsonify if state is not None else {}
+        return state.jsonify if state else {}
 
     @property
     def setting(self):
         sett = self._memoize.get(Packet.Type.SETTING)
-        return sett.jsonify if sett is not None else {}
+        return sett.jsonify if sett else {}
 
     @property
     def notice(self):
         notice = self._memoize.get(Packet.Type.NOTICE)
-        return notice.jsonify if notice is not None else {}
+        return notice.jsonify if notice else {}
 
     # DIREZIONE: bici --> server
 
@@ -279,9 +305,12 @@ class Bike(_SuperBike):
     client --> instanza dell'antenna client
     """
 
-    def __init__(self, code, address, client=None, sensors=None):
-        if client is None:
+    def __init__(self, code, address, client=None, sensors=None, secret_key=None):
+        if not client:
             client = Client()
+
+        if secret_key:
+            Packet.secret_key = secret_key
 
         super().__init__(code, address, client)
 
